@@ -1327,6 +1327,23 @@ pub struct DepositAddress {
     pub url: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WithdrawResponse {
+    pub msg: String,
+    pub success: bool,
+    pub id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct TradeFee {
+    pub symbol: String,
+    #[serde(with = "string_or_float")]
+    pub maker_commission: f64,
+    #[serde(with = "string_or_float")]
+    pub taker_commission: f64,
+}
+
 pub(crate) mod string_or_float {
     use std::fmt;
 
