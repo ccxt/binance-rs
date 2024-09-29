@@ -158,7 +158,11 @@ impl Client {
 
     fn handler<T: DeserializeOwned>(&self, response: Response) -> Result<T> {
         match response.status() {
-            StatusCode::OK => Ok(response.json::<T>()?),
+            StatusCode::OK => {
+                Ok(response.json::<T>()?)
+                // println!("{:?}", response.text()?);
+                // bail!("Unauthorized");
+            }
             StatusCode::INTERNAL_SERVER_ERROR => {
                 bail!("Internal Server Error");
             }

@@ -2,12 +2,12 @@ use binance::api::*;
 use binance::config::*;
 use binance::general::*;
 use binance::model::*;
+use rust_decimal::prelude::*;
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mockito::Server;
-    use float_cmp::*;
 
     #[test]
     fn ping() {
@@ -116,7 +116,7 @@ mod tests {
                 } => {
                     assert_eq!(multiplier_up, "5");
                     assert_eq!(multiplier_down, "0.2");
-                    assert!(approx_eq!(f64, avg_price_mins.unwrap(), 5.0, ulps = 2));
+                    assert_eq!(avg_price_mins.unwrap(), Decimal::new(5, 0));
                 }
                 Filters::LotSize {
                     min_qty,
@@ -136,7 +136,7 @@ mod tests {
                     assert!(notional.is_none());
                     assert_eq!(min_notional.unwrap(), "0.00010000");
                     assert!(apply_to_market.unwrap());
-                    assert!(approx_eq!(f64, avg_price_mins.unwrap(), 5.0, ulps = 2));
+                    assert_eq!(avg_price_mins.unwrap(), Decimal::new(5, 0));
                 }
                 Filters::IcebergParts { limit } => {
                     assert_eq!(limit.unwrap(), 10);

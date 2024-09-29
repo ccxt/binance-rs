@@ -6,6 +6,7 @@ use binance::account::*;
 use binance::market::*;
 use binance::model::KlineSummary;
 use binance::errors::ErrorKind as BinanceLibErrorKind;
+use rust_decimal::prelude::*;
 
 fn main() {
     // The general spot API endpoints; shown with
@@ -81,7 +82,8 @@ fn account() {
         Err(e) => println!("Error: {}", e),
     }
 
-    match account.limit_buy("WTCETH", 10, 0.014000) {
+    match account.limit_buy("WTCETH", 10, Decimal::new(14, 3)) {
+        // match account.limit_buy("WTCETH", 10, 0.014000) {
         Ok(answer) => println!("{:?}", answer),
         Err(e) => println!("Error: {}", e),
     }
@@ -96,7 +98,8 @@ fn account() {
         Err(e) => println!("Error: {}", e),
     }
 
-    match account.limit_sell("WTCETH", 10, 0.035000) {
+    match account.limit_sell("WTCETH", 10, Decimal::new(35, 3)) {
+        // match account.limit_sell("WTCETH", 10, 0.035000) {
         Ok(answer) => println!("{:?}", answer),
         Err(e) => println!("Error: {}", e),
     }

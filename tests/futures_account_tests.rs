@@ -1,12 +1,12 @@
 use binance::api::*;
 use binance::config::*;
 use binance::futures::account::*;
+use rust_decimal::prelude::*;
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mockito::{Server, Matcher};
-    use float_cmp::*;
     use binance::account::OrderSide;
     use binance::futures::model::Transaction;
 
@@ -33,12 +33,7 @@ mod tests {
 
         assert_eq!(response.leverage, 2);
         assert_eq!(response.symbol, "LTCUSDT");
-        assert!(approx_eq!(
-            f64,
-            response.max_notional_value,
-            9223372036854776000.0,
-            ulps = 2
-        ));
+        assert_eq!(response.max_notional_value, Decimal::from_str("9223372036854776000.0").unwrap());
     }
 
     #[test]
@@ -83,7 +78,7 @@ mod tests {
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
         account
-            .change_position_margin("BTCUSDT", 100., true)
+        .change_position_margin("BTCUSDT", Decimal::new(100, 0), true)
             .unwrap();
 
         mock.assert();
@@ -147,7 +142,7 @@ mod tests {
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let transaction: Transaction = account.stop_market_close_buy("SRMUSDT", 10.5).unwrap();
+        let transaction: Transaction = account.stop_market_close_buy("SRMUSDT", Decimal::new(105, 1)).unwrap();
 
         mock_stop_market_close_sell.assert();
 
@@ -155,7 +150,7 @@ mod tests {
         assert_eq!(transaction.side, "BUY");
         assert_eq!(transaction.orig_type, "STOP_MARKET");
         assert!(transaction.close_position);
-        assert!(approx_eq!(f64, transaction.stop_price, 10.5, ulps = 2));
+        assert_eq!(transaction.stop_price, Decimal::new(105, 1));
     }
 
     #[test]
@@ -172,7 +167,7 @@ mod tests {
             .set_recv_window(1234);
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let transaction: Transaction = account.stop_market_close_sell("SRMUSDT", 7.4).unwrap();
+        let transaction: Transaction = account.stop_market_close_sell("SRMUSDT", Decimal::new(74, 1)).unwrap();
 
         mock_stop_market_close_sell.assert();
 
@@ -180,7 +175,7 @@ mod tests {
         assert_eq!(transaction.side, "SELL");
         assert_eq!(transaction.orig_type, "STOP_MARKET");
         assert!(transaction.close_position);
-        assert!(approx_eq!(f64, transaction.stop_price, 7.4, ulps = 2));
+        assert_eq!(transaction.stop_price, Decimal::new(74, 1));
     }
 
     #[test]
@@ -206,7 +201,7 @@ mod tests {
             qty: None,
             reduce_only: None,
             price: None,
-            stop_price: Some(7.4),
+            stop_price: Some(Decimal::new(74, 1)),
             close_position: Some(true),
             activation_price: None,
             callback_rate: None,
@@ -221,7 +216,7 @@ mod tests {
         assert_eq!(transaction.side, "SELL");
         assert_eq!(transaction.orig_type, "STOP_MARKET");
         assert!(transaction.close_position);
-        assert!(approx_eq!(f64, transaction.stop_price, 7.4, ulps = 2));
+        assert_eq!(transaction.stop_price, Decimal::new(74, 1));
     }
 
     #[test]
