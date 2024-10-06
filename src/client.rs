@@ -160,8 +160,6 @@ impl Client {
         match response.status() {
             StatusCode::OK => {
                 Ok(response.json::<T>()?)
-                // println!("{:?}", response.text()?);
-                // bail!("Unauthorized");
             }
             StatusCode::INTERNAL_SERVER_ERROR => {
                 bail!("Internal Server Error");
