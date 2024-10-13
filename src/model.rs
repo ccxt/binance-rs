@@ -624,6 +624,17 @@ pub struct AggrTradesEvent {
 /// Update Speed: Real-time
 ///
 /// <https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md#trade-streams>
+/// {
+///     "e": "trade",     // Event type
+///     "E": 1672515782136,   // Event time
+///     "s": "BNBBTC",    // Symbol
+///     "t": 12345,       // Trade ID
+///     "p": "0.001",     // Price
+///     "q": "100",       // Quantity
+///     "T": 1672515782136,   // Trade time
+///     "m": true,        // Is the buyer the market maker?
+///     "M": true         // Ignore
+/// }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct TradeEvent {
@@ -645,19 +656,14 @@ pub struct TradeEvent {
     #[serde(rename = "q")]
     pub qty: String,
 
-    #[serde(rename = "b")]
-    pub buyer_order_id: u64,
-
-    #[serde(rename = "a")]
-    pub seller_order_id: u64,
-
     #[serde(rename = "T")]
     pub trade_order_time: u64,
 
     #[serde(rename = "m")]
     pub is_buyer_maker: bool,
 
-    #[serde(skip, rename = "M")]
+    // #[serde(skip, rename = "M")]
+    #[serde(rename = "M")]
     pub m_ignore: bool,
 }
 
