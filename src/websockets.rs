@@ -19,6 +19,7 @@ use tungstenite::handshake::client::Response;
 enum WebsocketAPI {
     Default,
     MultiStream,
+    OptionsMultiStream,
     Custom(String),
 }
 
@@ -28,6 +29,9 @@ impl WebsocketAPI {
             WebsocketAPI::Default => format!("wss://stream.binance.com/ws/{}", subscription),
             WebsocketAPI::MultiStream => {
                 format!("wss://stream.binance.com/stream?streams={}", subscription)
+            }
+            WebsocketAPI::OptionsMultiStream => {
+                format!("wss://nbstream.binance.com/eoptions/stream?streams={}", subscription)
             }
             WebsocketAPI::Custom(url) => format!("{}/{}", url, subscription),
         }
