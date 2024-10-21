@@ -7,6 +7,7 @@ use crate::api::{API, Futures};
 use crate::model::Empty;
 use crate::account::OrderSide;
 use crate::futures::model::{Order, TradeHistory};
+use rust_decimal::prelude::*;
 
 use super::model::{
     ChangeLeverageResponse, Transaction, CanceledOrder, PositionRisk, AccountBalance,
@@ -118,15 +119,15 @@ struct OrderRequest {
     pub position_side: Option<PositionSide>,
     pub order_type: OrderType,
     pub time_in_force: Option<TimeInForce>,
-    pub qty: Option<f64>,
+    pub qty: Option<Decimal>,
     pub reduce_only: Option<bool>,
-    pub price: Option<f64>,
-    pub stop_price: Option<f64>,
+    pub price: Option<Decimal>,
+    pub stop_price: Option<Decimal>,
     pub close_position: Option<bool>,
-    pub activation_price: Option<f64>,
-    pub callback_rate: Option<f64>,
+    pub activation_price: Option<Decimal>,
+    pub callback_rate: Option<Decimal>,
     pub working_type: Option<WorkingType>,
-    pub price_protect: Option<f64>,
+    pub price_protect: Option<Decimal>,
 }
 
 pub struct CustomOrderRequest {
@@ -135,15 +136,15 @@ pub struct CustomOrderRequest {
     pub position_side: Option<PositionSide>,
     pub order_type: OrderType,
     pub time_in_force: Option<TimeInForce>,
-    pub qty: Option<f64>,
+    pub qty: Option<Decimal>,
     pub reduce_only: Option<bool>,
-    pub price: Option<f64>,
-    pub stop_price: Option<f64>,
+    pub price: Option<Decimal>,
+    pub stop_price: Option<Decimal>,
     pub close_position: Option<bool>,
-    pub activation_price: Option<f64>,
-    pub callback_rate: Option<f64>,
+    pub activation_price: Option<Decimal>,
+    pub callback_rate: Option<Decimal>,
     pub working_type: Option<WorkingType>,
-    pub price_protect: Option<f64>,
+    pub price_protect: Option<Decimal>,
 }
 
 pub struct IncomeRequest {
@@ -205,7 +206,7 @@ impl Display for IncomeType {
 
 impl FuturesAccount {
     pub fn limit_buy(
-        &self, symbol: impl Into<String>, qty: impl Into<f64>, price: f64,
+        &self, symbol: impl Into<String>, qty: impl Into<Decimal>, price: Decimal,
         time_in_force: TimeInForce,
     ) -> Result<Transaction> {
         let buy = OrderRequest {
@@ -231,7 +232,7 @@ impl FuturesAccount {
     }
 
     pub fn limit_sell(
-        &self, symbol: impl Into<String>, qty: impl Into<f64>, price: f64,
+        &self, symbol: impl Into<String>, qty: impl Into<Decimal>, price: Decimal,
         time_in_force: TimeInForce,
     ) -> Result<Transaction> {
         let sell = OrderRequest {
@@ -260,7 +261,7 @@ impl FuturesAccount {
     pub fn market_buy<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let buy = OrderRequest {
             symbol: symbol.into(),
@@ -288,7 +289,7 @@ impl FuturesAccount {
     pub fn market_sell<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -344,7 +345,7 @@ impl FuturesAccount {
     pub fn stop_market_close_buy<S, F>(&self, symbol: S, stop_price: F) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -372,7 +373,7 @@ impl FuturesAccount {
     pub fn stop_market_close_sell<S, F>(&self, symbol: S, stop_price: F) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -613,7 +614,7 @@ impl FuturesAccount {
     }
 
     pub fn change_position_margin<S>(
-        &self, symbol: S, amount: f64, is_adding_margin: bool,
+        &self, symbol: S, amount: Decimal, is_adding_margin: bool,
     ) -> Result<()>
     where
         S: Into<String>,

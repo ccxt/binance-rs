@@ -10,6 +10,7 @@ use std::collections::BTreeMap;
 use std::fmt::Display;
 use crate::api::API;
 use crate::api::Spot;
+use rust_decimal::prelude::*;
 
 #[derive(Clone)]
 pub struct Account {
@@ -19,9 +20,9 @@ pub struct Account {
 
 struct OrderRequest {
     pub symbol: String,
-    pub qty: f64,
-    pub price: f64,
-    pub stop_price: Option<f64>,
+    pub qty: Decimal,
+    pub price: Decimal,
+    pub stop_price: Option<Decimal>,
     pub order_side: OrderSide,
     pub order_type: OrderType,
     pub time_in_force: TimeInForce,
@@ -30,8 +31,8 @@ struct OrderRequest {
 
 struct OrderQuoteQuantityRequest {
     pub symbol: String,
-    pub quote_order_qty: f64,
-    pub price: f64,
+    pub quote_order_qty: Decimal,
+    pub price: Decimal,
     pub order_side: OrderSide,
     pub order_type: OrderType,
     pub time_in_force: TimeInForce,
@@ -210,10 +211,10 @@ impl Account {
     }
 
     // Place a LIMIT order - BUY
-    pub fn limit_buy<S, F>(&self, symbol: S, qty: F, price: f64) -> Result<Transaction>
+    pub fn limit_buy<S, F>(&self, symbol: S, qty: F, price: Decimal) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let buy = OrderRequest {
             symbol: symbol.into(),
@@ -233,10 +234,10 @@ impl Account {
     /// Place a test limit order - BUY
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
-    pub fn test_limit_buy<S, F>(&self, symbol: S, qty: F, price: f64) -> Result<()>
+    pub fn test_limit_buy<S, F>(&self, symbol: S, qty: F, price: Decimal) -> Result<()>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let buy = OrderRequest {
             symbol: symbol.into(),
@@ -256,10 +257,10 @@ impl Account {
     }
 
     // Place a LIMIT order - SELL
-    pub fn limit_sell<S, F>(&self, symbol: S, qty: F, price: f64) -> Result<Transaction>
+    pub fn limit_sell<S, F>(&self, symbol: S, qty: F, price: Decimal) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -279,10 +280,10 @@ impl Account {
     /// Place a test LIMIT order - SELL
     ///
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
-    pub fn test_limit_sell<S, F>(&self, symbol: S, qty: F, price: f64) -> Result<()>
+    pub fn test_limit_sell<S, F>(&self, symbol: S, qty: F, price: Decimal) -> Result<()>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -305,12 +306,12 @@ impl Account {
     pub fn market_buy<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let buy = OrderRequest {
             symbol: symbol.into(),
             qty: qty.into(),
-            price: 0.0,
+            price: Decimal::new(0,0),
             stop_price: None,
             order_side: OrderSide::Buy,
             order_type: OrderType::Market,
@@ -328,12 +329,12 @@ impl Account {
     pub fn test_market_buy<S, F>(&self, symbol: S, qty: F) -> Result<()>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let buy = OrderRequest {
             symbol: symbol.into(),
             qty: qty.into(),
-            price: 0.0,
+            price: Decimal::new(0, 0),
             stop_price: None,
             order_side: OrderSide::Buy,
             order_type: OrderType::Market,
@@ -353,12 +354,12 @@ impl Account {
     ) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let buy = OrderQuoteQuantityRequest {
             symbol: symbol.into(),
             quote_order_qty: quote_order_qty.into(),
-            price: 0.0,
+            price: Decimal::new(0, 0),
             order_side: OrderSide::Buy,
             order_type: OrderType::Market,
             time_in_force: TimeInForce::GTC,
@@ -377,12 +378,12 @@ impl Account {
     ) -> Result<()>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let buy = OrderQuoteQuantityRequest {
             symbol: symbol.into(),
             quote_order_qty: quote_order_qty.into(),
-            price: 0.0,
+            price: Decimal::new(0, 0),
             order_side: OrderSide::Buy,
             order_type: OrderType::Market,
             time_in_force: TimeInForce::GTC,
@@ -399,12 +400,12 @@ impl Account {
     pub fn market_sell<S, F>(&self, symbol: S, qty: F) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
             qty: qty.into(),
-            price: 0.0,
+            price: Decimal::new(0, 0),
             stop_price: None,
             order_side: OrderSide::Sell,
             order_type: OrderType::Market,
@@ -422,12 +423,12 @@ impl Account {
     pub fn test_market_sell<S, F>(&self, symbol: S, qty: F) -> Result<()>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
             qty: qty.into(),
-            price: 0.0,
+            price: Decimal::new(0, 0),
             stop_price: None,
             order_side: OrderSide::Sell,
             order_type: OrderType::Market,
@@ -447,12 +448,12 @@ impl Account {
     ) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderQuoteQuantityRequest {
             symbol: symbol.into(),
             quote_order_qty: quote_order_qty.into(),
-            price: 0.0,
+            price: Decimal::new(0, 0),
             order_side: OrderSide::Sell,
             order_type: OrderType::Market,
             time_in_force: TimeInForce::GTC,
@@ -471,12 +472,12 @@ impl Account {
     ) -> Result<()>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderQuoteQuantityRequest {
             symbol: symbol.into(),
             quote_order_qty: quote_order_qty.into(),
-            price: 0.0,
+            price: Decimal::new(0, 0),
             order_side: OrderSide::Sell,
             order_type: OrderType::Market,
             time_in_force: TimeInForce::GTC,
@@ -495,20 +496,21 @@ impl Account {
     ///```no_run
     /// use binance::api::Binance;
     /// use binance::account::*;
+    /// use rust_decimal::Decimal;
     ///
     /// fn main() {
     ///     let api_key = Some("api_key".into());
     ///     let secret_key = Some("secret_key".into());
     ///     let account: Account = Binance::new(api_key, secret_key);
-    ///     let result = account.stop_limit_buy_order("LTCBTC", 1, 0.1, 0.09, TimeInForce::GTC);
+    ///     let result = account.stop_limit_buy_order("LTCBTC", 1, Decimal::new(1, 1), Decimal::new(9, 2), TimeInForce::GTC);
     /// }
     /// ```
     pub fn stop_limit_buy_order<S, F>(
-        &self, symbol: S, qty: F, price: f64, stop_price: f64, time_in_force: TimeInForce,
+        &self, symbol: S, qty: F, price: Decimal, stop_price: Decimal, time_in_force: TimeInForce,
     ) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -533,20 +535,21 @@ impl Account {
     ///```no_run
     /// use binance::api::Binance;
     /// use binance::account::*;
+    /// use rust_decimal::Decimal;
     ///
     /// fn main() {
     ///     let api_key = Some("api_key".into());
     ///     let secret_key = Some("secret_key".into());
     ///     let account: Account = Binance::new(api_key, secret_key);
-    ///     let result = account.test_stop_limit_buy_order("LTCBTC", 1, 0.1, 0.09, TimeInForce::GTC);
+    ///     let result = account.test_stop_limit_buy_order("LTCBTC", 1, Decimal::new(1, 1), Decimal::new(9, 2), TimeInForce::GTC);
     /// }
     /// ```
     pub fn test_stop_limit_buy_order<S, F>(
-        &self, symbol: S, qty: F, price: f64, stop_price: f64, time_in_force: TimeInForce,
+        &self, symbol: S, qty: F, price: Decimal, stop_price: Decimal, time_in_force: TimeInForce,
     ) -> Result<()>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -571,20 +574,21 @@ impl Account {
     ///```no_run
     /// use binance::api::Binance;
     /// use binance::account::*;
+    /// use rust_decimal::Decimal;
     ///
     /// fn main() {
     ///     let api_key = Some("api_key".into());
     ///     let secret_key = Some("secret_key".into());
     ///     let account: Account = Binance::new(api_key, secret_key);
-    ///     let result = account.stop_limit_sell_order("LTCBTC", 1, 0.1, 0.09, TimeInForce::GTC);
+    ///     let result = account.stop_limit_sell_order("LTCBTC", 1, Decimal::new(1, 1), Decimal::new(9, 2), TimeInForce::GTC);
     /// }
     /// ```
     pub fn stop_limit_sell_order<S, F>(
-        &self, symbol: S, qty: F, price: f64, stop_price: f64, time_in_force: TimeInForce,
+        &self, symbol: S, qty: F, price: Decimal, stop_price: Decimal, time_in_force: TimeInForce,
     ) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -609,20 +613,21 @@ impl Account {
     ///```no_run
     /// use binance::api::Binance;
     /// use binance::account::*;
+    /// use rust_decimal::Decimal;
     ///
     /// fn main() {
     ///     let api_key = Some("api_key".into());
     ///     let secret_key = Some("secret_key".into());
     ///     let account: Account = Binance::new(api_key, secret_key);
-    ///     let result = account.test_stop_limit_sell_order("LTCBTC", 1, 0.1, 0.09, TimeInForce::GTC);
+    ///     let result = account.test_stop_limit_sell_order("LTCBTC", 1, Decimal::new(1, 1), Decimal::new(9, 2), TimeInForce::GTC);
     /// }
     /// ```
     pub fn test_stop_limit_sell_order<S, F>(
-        &self, symbol: S, qty: F, price: f64, stop_price: f64, time_in_force: TimeInForce,
+        &self, symbol: S, qty: F, price: Decimal, stop_price: Decimal, time_in_force: TimeInForce,
     ) -> Result<()>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -644,12 +649,12 @@ impl Account {
     /// Place a custom order
     #[allow(clippy::too_many_arguments)]
     pub fn custom_order<S, F>(
-        &self, symbol: S, qty: F, price: f64, stop_price: Option<f64>, order_side: OrderSide,
+        &self, symbol: S, qty: F, price: Decimal, stop_price: Option<Decimal>, order_side: OrderSide,
         order_type: OrderType, time_in_force: TimeInForce, new_client_order_id: Option<String>,
     ) -> Result<Transaction>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -671,12 +676,12 @@ impl Account {
     /// This order is sandboxed: it is validated, but not sent to the matching engine.
     #[allow(clippy::too_many_arguments)]
     pub fn test_custom_order<S, F>(
-        &self, symbol: S, qty: F, price: f64, stop_price: Option<f64>, order_side: OrderSide,
+        &self, symbol: S, qty: F, price: Decimal, stop_price: Option<Decimal>, order_side: OrderSide,
         order_type: OrderType, time_in_force: TimeInForce, new_client_order_id: Option<String>,
     ) -> Result<()>
     where
         S: Into<String>,
-        F: Into<f64>,
+        F: Into<Decimal>,
     {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -809,7 +814,7 @@ impl Account {
             order_parameters.insert("stopPrice".into(), stop_price.to_string());
         }
 
-        if order.price != 0.0 {
+        if order.price != Decimal::ZERO {
             order_parameters.insert("price".into(), order.price.to_string());
             order_parameters.insert("timeInForce".into(), order.time_in_force.to_string());
         }
@@ -831,7 +836,7 @@ impl Account {
         order_parameters.insert("type".into(), order.order_type.to_string());
         order_parameters.insert("quoteOrderQty".into(), order.quote_order_qty.to_string());
 
-        if order.price != 0.0 {
+        if order.price != Decimal::ZERO {
             order_parameters.insert("price".into(), order.price.to_string());
             order_parameters.insert("timeInForce".into(), order.time_in_force.to_string());
         }

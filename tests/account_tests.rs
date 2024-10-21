@@ -2,12 +2,12 @@ use binance::api::*;
 use binance::config::*;
 use binance::account::*;
 use binance::model::*;
+use rust_decimal::prelude::*;
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mockito::{Server, Matcher};
-    use float_cmp::*;
 
     #[test]
     fn get_account() {
@@ -30,10 +30,10 @@ mod tests {
 
         mock_get_account.assert();
 
-        assert!(approx_eq!(f32, account.maker_commission, 15.0, ulps = 2));
-        assert!(approx_eq!(f32, account.taker_commission, 15.0, ulps = 2));
-        assert!(approx_eq!(f32, account.buyer_commission, 0.0, ulps = 2));
-        assert!(approx_eq!(f32, account.seller_commission, 0.0, ulps = 2));
+        assert_eq!(account.maker_commission, Decimal::new(15, 0));
+        assert_eq!(account.taker_commission, Decimal::new(15, 0));
+        assert_eq!(account.buyer_commission, Decimal::ZERO);
+        assert_eq!(account.seller_commission, Decimal::ZERO);
         assert!(account.can_trade);
         assert!(account.can_withdraw);
         assert!(account.can_deposit);
@@ -105,7 +105,7 @@ mod tests {
         assert_eq!(open_order.order_id, 1);
         assert_eq!(open_order.order_list_id, -1);
         assert_eq!(open_order.client_order_id, "myOrder1");
-        assert!(approx_eq!(f64, open_order.price, 0.1, ulps = 2));
+        assert_eq!(open_order.price, Decimal::new(1, 1));
         assert_eq!(open_order.orig_qty, "1.0");
         assert_eq!(open_order.executed_qty, "0.0");
         assert_eq!(open_order.cummulative_quote_qty, "0.0");
@@ -113,7 +113,7 @@ mod tests {
         assert_eq!(open_order.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(open_order.type_name, "LIMIT");
         assert_eq!(open_order.side, "BUY");
-        assert!(approx_eq!(f64, open_order.stop_price, 0.0, ulps = 2));
+        assert_eq!(open_order.stop_price, Decimal::ZERO);
         assert_eq!(open_order.iceberg_qty, "0.0");
         assert_eq!(open_order.time, 1499827319559);
         assert_eq!(open_order.update_time, 1499827319559);
@@ -147,7 +147,7 @@ mod tests {
         assert_eq!(open_order.order_id, 1);
         assert_eq!(open_order.order_list_id, -1);
         assert_eq!(open_order.client_order_id, "myOrder1");
-        assert!(approx_eq!(f64, open_order.price, 0.1, ulps = 2));
+        assert_eq!(open_order.price, Decimal::new(1, 1));
         assert_eq!(open_order.orig_qty, "1.0");
         assert_eq!(open_order.executed_qty, "0.0");
         assert_eq!(open_order.cummulative_quote_qty, "0.0");
@@ -155,7 +155,7 @@ mod tests {
         assert_eq!(open_order.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(open_order.type_name, "LIMIT");
         assert_eq!(open_order.side, "BUY");
-        assert!(approx_eq!(f64, open_order.stop_price, 0.0, ulps = 2));
+        assert_eq!(open_order.stop_price, Decimal::ZERO);
         assert_eq!(open_order.iceberg_qty, "0.0");
         assert_eq!(open_order.time, 1499827319559);
         assert_eq!(open_order.update_time, 1499827319559);
@@ -236,7 +236,7 @@ mod tests {
         assert_eq!(order_status.order_id, 1);
         assert_eq!(order_status.order_list_id, -1);
         assert_eq!(order_status.client_order_id, "myOrder1");
-        assert!(approx_eq!(f64, order_status.price, 0.1, ulps = 2));
+        assert_eq!(order_status.price, Decimal::new(1, 1));
         assert_eq!(order_status.orig_qty, "1.0");
         assert_eq!(order_status.executed_qty, "0.0");
         assert_eq!(order_status.cummulative_quote_qty, "0.0");
@@ -244,7 +244,7 @@ mod tests {
         assert_eq!(order_status.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(order_status.type_name, "LIMIT");
         assert_eq!(order_status.side, "BUY");
-        assert!(approx_eq!(f64, order_status.stop_price, 0.0, ulps = 2));
+        assert_eq!(order_status.stop_price, Decimal::ZERO);
         assert_eq!(order_status.iceberg_qty, "0.0");
         assert_eq!(order_status.time, 1499827319559);
         assert_eq!(order_status.update_time, 1499827319559);
@@ -288,7 +288,7 @@ mod tests {
             .set_recv_window(1234);
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let transaction: Transaction = account.limit_buy("LTCBTC", 1, 0.1).unwrap();
+        let transaction: Transaction = account.limit_buy("LTCBTC", 1, Decimal::new(1, 1)).unwrap();
 
         mock_limit_buy.assert();
 
@@ -297,15 +297,10 @@ mod tests {
         assert_eq!(transaction.order_list_id.unwrap(), -1);
         assert_eq!(transaction.client_order_id, "6gCrw2kRUAF9CvJDGP16IP");
         assert_eq!(transaction.transact_time, 1507725176595);
-        assert!(approx_eq!(f64, transaction.price, 0.1, ulps = 2));
-        assert!(approx_eq!(f64, transaction.orig_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(f64, transaction.executed_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(
-            f64,
-            transaction.cummulative_quote_qty,
-            0.0,
-            ulps = 2
-        ));
+        assert_eq!(transaction.price, Decimal::new(1, 1));
+        assert_eq!(transaction.orig_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.executed_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.cummulative_quote_qty, Decimal::ZERO);
         assert_eq!(transaction.status, "NEW");
         assert_eq!(transaction.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(transaction.type_name, "LIMIT");
@@ -326,7 +321,7 @@ mod tests {
             .set_recv_window(1234);
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        account.test_limit_buy("LTCBTC", 1, 0.1).unwrap();
+        account.test_limit_buy("LTCBTC", 1, Decimal::new(1, 1)).unwrap();
 
         mock_test_limit_buy.assert();
     }
@@ -345,7 +340,7 @@ mod tests {
             .set_recv_window(1234);
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        let transaction: Transaction = account.limit_sell("LTCBTC", 1, 0.1).unwrap();
+        let transaction: Transaction = account.limit_sell("LTCBTC", 1, Decimal::new(1, 1)).unwrap();
 
         mock_limit_sell.assert();
 
@@ -354,15 +349,10 @@ mod tests {
         assert_eq!(transaction.order_list_id.unwrap(), -1);
         assert_eq!(transaction.client_order_id, "6gCrw2kRUAF9CvJDGP16IP");
         assert_eq!(transaction.transact_time, 1507725176595);
-        assert!(approx_eq!(f64, transaction.price, 0.1, ulps = 2));
-        assert!(approx_eq!(f64, transaction.orig_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(f64, transaction.executed_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(
-            f64,
-            transaction.cummulative_quote_qty,
-            0.0,
-            ulps = 2
-        ));
+        assert_eq!(transaction.price, Decimal::new(1, 1));
+        assert_eq!(transaction.orig_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.executed_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.cummulative_quote_qty, Decimal::ZERO);
         assert_eq!(transaction.status, "NEW");
         assert_eq!(transaction.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(transaction.type_name, "LIMIT");
@@ -383,7 +373,7 @@ mod tests {
             .set_recv_window(1234);
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        account.test_limit_sell("LTCBTC", 1, 0.1).unwrap();
+        account.test_limit_sell("LTCBTC", 1, Decimal::new(1, 1)).unwrap();
 
         mock_test_limit_sell.assert();
     }
@@ -415,15 +405,10 @@ mod tests {
         assert_eq!(transaction.order_list_id.unwrap(), -1);
         assert_eq!(transaction.client_order_id, "6gCrw2kRUAF9CvJDGP16IP");
         assert_eq!(transaction.transact_time, 1507725176595);
-        assert!(approx_eq!(f64, transaction.price, 0.1, ulps = 2));
-        assert!(approx_eq!(f64, transaction.orig_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(f64, transaction.executed_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(
-            f64,
-            transaction.cummulative_quote_qty,
-            0.0,
-            ulps = 2
-        ));
+        assert_eq!(transaction.price, Decimal::new(1, 1));
+        assert_eq!(transaction.orig_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.executed_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.cummulative_quote_qty, Decimal::ZERO);
         assert_eq!(transaction.status, "NEW");
         assert_eq!(transaction.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(transaction.type_name, "MARKET");
@@ -467,7 +452,7 @@ mod tests {
             .set_recv_window(1234);
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        match account.market_buy_using_quote_quantity("BNBBTC", 0.002) {
+        match account.market_buy_using_quote_quantity("BNBBTC", Decimal::new(2, 3)) {
             Ok(answer) => {
                 assert!(answer.order_id == 1);
             }
@@ -492,7 +477,7 @@ mod tests {
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
         account
-            .test_market_buy_using_quote_quantity("BNBBTC", 0.002)
+        .test_market_buy_using_quote_quantity("BNBBTC", Decimal::new(2, 3))
             .unwrap();
 
         mock_test_market_buy_using_quote_quantity.assert();
@@ -525,15 +510,10 @@ mod tests {
         assert_eq!(transaction.order_list_id.unwrap(), -1);
         assert_eq!(transaction.client_order_id, "6gCrw2kRUAF9CvJDGP16IP");
         assert_eq!(transaction.transact_time, 1507725176595);
-        assert!(approx_eq!(f64, transaction.price, 0.1, ulps = 2));
-        assert!(approx_eq!(f64, transaction.orig_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(f64, transaction.executed_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(
-            f64,
-            transaction.cummulative_quote_qty,
-            0.0,
-            ulps = 2
-        ));
+        assert_eq!(transaction.price, Decimal::new(1, 1));
+        assert_eq!(transaction.orig_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.executed_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.cummulative_quote_qty, Decimal::ZERO);
         assert_eq!(transaction.status, "NEW");
         assert_eq!(transaction.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(transaction.type_name, "MARKET");
@@ -577,7 +557,7 @@ mod tests {
             .set_recv_window(1234);
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
-        match account.market_sell_using_quote_quantity("BNBBTC", 0.002) {
+        match account.market_sell_using_quote_quantity("BNBBTC", Decimal::new(2, 3)) {
             Ok(answer) => {
                 assert!(answer.order_id == 1);
             }
@@ -602,7 +582,7 @@ mod tests {
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
         account
-            .test_market_sell_using_quote_quantity("BNBBTC", 0.002)
+        .test_market_sell_using_quote_quantity("BNBBTC", Decimal::new(2, 3))
             .unwrap();
 
         mock_test_market_sell_using_quote_quantity.assert();
@@ -623,7 +603,7 @@ mod tests {
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
         let transaction: Transaction = account
-            .stop_limit_buy_order("LTCBTC", 1, 0.1, 0.09, TimeInForce::GTC)
+        .stop_limit_buy_order("LTCBTC", 1, Decimal::new(1, 1), Decimal::new(9, 2), TimeInForce::GTC)
             .unwrap();
 
         mock_stop_limit_buy_order.assert();
@@ -633,16 +613,11 @@ mod tests {
         assert_eq!(transaction.order_list_id.unwrap(), -1);
         assert_eq!(transaction.client_order_id, "6gCrw2kRUAF9CvJDGP16IP");
         assert_eq!(transaction.transact_time, 1507725176595);
-        assert!(approx_eq!(f64, transaction.price, 0.1, ulps = 2));
-        assert!(approx_eq!(f64, transaction.orig_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(f64, transaction.executed_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(
-            f64,
-            transaction.cummulative_quote_qty,
-            0.0,
-            ulps = 2
-        ));
-        assert!(approx_eq!(f64, transaction.stop_price, 0.09, ulps = 2));
+        assert_eq!(transaction.price, Decimal::new(1, 1));
+        assert_eq!(transaction.orig_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.executed_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.cummulative_quote_qty, Decimal::ZERO);
+        assert_eq!(transaction.stop_price, Decimal::new(9, 2));
         assert_eq!(transaction.status, "NEW");
         assert_eq!(transaction.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(transaction.type_name, "STOP_LOSS_LIMIT");
@@ -664,7 +639,7 @@ mod tests {
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
         account
-            .test_stop_limit_buy_order("LTCBTC", 1, 0.1, 0.09, TimeInForce::GTC)
+        .test_stop_limit_buy_order("LTCBTC", 1, Decimal::new(1, 1), Decimal::new(9, 2), TimeInForce::GTC)
             .unwrap();
 
         mock_test_stop_limit_buy_order.assert();
@@ -685,7 +660,7 @@ mod tests {
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
         let transaction: Transaction = account
-            .stop_limit_sell_order("LTCBTC", 1, 0.1, 0.09, TimeInForce::GTC)
+            .stop_limit_sell_order("LTCBTC", 1, Decimal::new(1, 1), Decimal::new(9, 2), TimeInForce::GTC)
             .unwrap();
 
         mock_stop_limit_sell_order.assert();
@@ -695,16 +670,11 @@ mod tests {
         assert_eq!(transaction.order_list_id.unwrap(), -1);
         assert_eq!(transaction.client_order_id, "6gCrw2kRUAF9CvJDGP16IP");
         assert_eq!(transaction.transact_time, 1507725176595);
-        assert!(approx_eq!(f64, transaction.price, 0.1, ulps = 2));
-        assert!(approx_eq!(f64, transaction.orig_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(f64, transaction.executed_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(
-            f64,
-            transaction.cummulative_quote_qty,
-            0.0,
-            ulps = 2
-        ));
-        assert!(approx_eq!(f64, transaction.stop_price, 0.09, ulps = 2));
+        assert_eq!(transaction.price, Decimal::new(1, 1));
+        assert_eq!(transaction.orig_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.executed_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.cummulative_quote_qty, Decimal::ZERO);
+        assert_eq!(transaction.stop_price, Decimal::new(9, 2));
         assert_eq!(transaction.status, "NEW");
         assert_eq!(transaction.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(transaction.type_name, "STOP_LOSS_LIMIT");
@@ -726,7 +696,7 @@ mod tests {
         let account: Account = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
         account
-            .test_stop_limit_sell_order("LTCBTC", 1, 0.1, 0.09, TimeInForce::GTC)
+            .test_stop_limit_sell_order("LTCBTC", 1, Decimal::new(1, 1), Decimal::new(9, 2), TimeInForce::GTC)
             .unwrap();
 
         mock_test_stop_limit_sell_order.assert();
@@ -750,7 +720,7 @@ mod tests {
             .custom_order(
                 "LTCBTC",
                 1,
-                0.1,
+                Decimal::new(1, 1),
                 None,
                 OrderSide::Buy,
                 OrderType::Market,
@@ -766,16 +736,16 @@ mod tests {
         assert_eq!(transaction.order_list_id.unwrap(), -1);
         assert_eq!(transaction.client_order_id, "6gCrw2kRUAF9CvJDGP16IP");
         assert_eq!(transaction.transact_time, 1507725176595);
-        assert!(approx_eq!(f64, transaction.price, 0.1, ulps = 2));
-        assert!(approx_eq!(f64, transaction.orig_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(f64, transaction.executed_qty, 1.0, ulps = 2));
-        assert!(approx_eq!(
-            f64,
-            transaction.cummulative_quote_qty,
-            0.0,
-            ulps = 2
-        ));
-        assert!(approx_eq!(f64, transaction.stop_price, 0.09, ulps = 2));
+        assert_eq!(transaction.price, Decimal::new(1, 1));
+        assert_eq!(transaction.orig_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.executed_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.cummulative_quote_qty, Decimal::ZERO);
+        assert_eq!(transaction.stop_price, Decimal::new(9, 2));
+        assert_eq!(transaction.price, Decimal::new(1, 1));
+        assert_eq!(transaction.orig_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.executed_qty, Decimal::new(1, 0));
+        assert_eq!(transaction.cummulative_quote_qty, Decimal::ZERO);
+        assert_eq!(transaction.stop_price, Decimal::new(9, 2));
         assert_eq!(transaction.status, "NEW");
         assert_eq!(transaction.time_in_force, "GTC"); //Migrate to TimeInForce enum
         assert_eq!(transaction.type_name, "STOP_LOSS_LIMIT");
@@ -800,7 +770,7 @@ mod tests {
             .test_custom_order(
                 "LTCBTC",
                 1,
-                0.1,
+                Decimal::new(1, 1),
                 None,
                 OrderSide::Buy,
                 OrderType::Market,
@@ -887,8 +857,8 @@ mod tests {
         let history: TradeHistory = histories[0].clone();
 
         assert_eq!(history.id, 28457);
-        assert!(approx_eq!(f64, history.price, 4.00000100, ulps = 2));
-        assert!(approx_eq!(f64, history.qty, 12.00000000, ulps = 2));
+        assert_eq!(history.price, Decimal::from_str("4.000001").unwrap());
+        assert_eq!(history.qty, Decimal::new(12, 0));
         assert_eq!(history.commission, "10.10000000");
         assert_eq!(history.commission_asset, "BNB");
         assert_eq!(history.time, 1499865549590);

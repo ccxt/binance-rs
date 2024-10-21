@@ -5,6 +5,7 @@ use crate::errors::Result;
 use std::collections::BTreeMap;
 use crate::api::API;
 use crate::api::Sapi;
+use rust_decimal::prelude::*;
 
 #[derive(Clone)]
 pub struct Savings {
@@ -50,7 +51,7 @@ impl Savings {
     }
 
     pub fn transfer_funds<S>(
-        &self, asset: S, amount: f64, transfer_type: SpotFuturesTransferType,
+        &self, asset: S, amount: Decimal, transfer_type: SpotFuturesTransferType,
     ) -> Result<TransactionId>
     where
         S: Into<String>,

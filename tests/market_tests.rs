@@ -2,12 +2,12 @@ use binance::api::*;
 use binance::config::*;
 use binance::market::*;
 use binance::model::*;
+use rust_decimal::prelude::*;
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use mockito::{Server, Matcher};
-    use float_cmp::*;
 
     #[test]
     fn get_depth() {
@@ -26,7 +26,7 @@ mod tests {
         mock_get_depth.assert();
 
         assert_eq!(order_book.last_update_id, 1027024);
-        assert_eq!(order_book.bids[0], Bids::new(4.00000000, 431.00000000));
+        assert_eq!(order_book.bids[0], Bids::new(Decimal::new(4, 0), Decimal::new(431, 0)));
     }
 
     #[test]
@@ -46,7 +46,7 @@ mod tests {
         mock_get_custom_depth.assert();
 
         assert_eq!(order_book.last_update_id, 1027024);
-        assert_eq!(order_book.bids[0], Bids::new(4.00000000, 431.00000000));
+        assert_eq!(order_book.bids[0], Bids::new(Decimal::new(4, 0), Decimal::new(431, 0)));
     }
 
     #[test]
@@ -69,10 +69,10 @@ mod tests {
                 assert!(!symbols.is_empty());
                 let first_symbol = symbols[0].clone();
                 assert_eq!(first_symbol.symbol, "LTCBTC");
-                assert!(approx_eq!(f64, first_symbol.price, 4.00000200, ulps = 2));
+                assert_eq!(first_symbol.price, Decimal::from_str("4.000002").unwrap());
                 let second_symbol = symbols[1].clone();
                 assert_eq!(second_symbol.symbol, "ETHBTC");
-                assert!(approx_eq!(f64, second_symbol.price, 0.07946600, ulps = 2));
+                assert_eq!(second_symbol.price, Decimal::from_str("0.07946600").unwrap());
             }
         }
     }
@@ -94,7 +94,7 @@ mod tests {
         mock_get_price.assert();
 
         assert_eq!(symbol.symbol, "LTCBTC");
-        assert!(approx_eq!(f64, symbol.price, 4.00000200, ulps = 2));
+        assert_eq!(symbol.price, Decimal::from_str("4.000002").unwrap());
     }
 
     #[test]
@@ -114,7 +114,7 @@ mod tests {
         mock_get_average_price.assert();
 
         assert_eq!(symbol.mins, 5);
-        assert!(approx_eq!(f64, symbol.price, 9.35751834, ulps = 2));
+        assert_eq!(symbol.price, Decimal::from_str("9.35751834").unwrap());
     }
 
     #[test]
@@ -137,46 +137,16 @@ mod tests {
                 assert!(!tickers.is_empty());
                 let first_ticker = tickers[0].clone();
                 assert_eq!(first_ticker.symbol, "LTCBTC");
-                assert!(approx_eq!(
-                    f64,
-                    first_ticker.bid_price,
-                    4.00000000,
-                    ulps = 2
-                ));
-                assert!(approx_eq!(
-                    f64,
-                    first_ticker.bid_qty,
-                    431.00000000,
-                    ulps = 2
-                ));
-                assert!(approx_eq!(
-                    f64,
-                    first_ticker.ask_price,
-                    4.00000200,
-                    ulps = 2
-                ));
-                assert!(approx_eq!(f64, first_ticker.ask_qty, 9.00000000, ulps = 2));
+                assert_eq!(first_ticker.bid_price, Decimal::new(4, 0));
+                assert_eq!(first_ticker.bid_qty, Decimal::new(431, 0));
+                assert_eq!(first_ticker.ask_price, Decimal::from_str("4.000002").unwrap());
+                assert_eq!(first_ticker.ask_qty, Decimal::new(9, 0));
                 let second_ticker = tickers[1].clone();
                 assert_eq!(second_ticker.symbol, "ETHBTC");
-                assert!(approx_eq!(
-                    f64,
-                    second_ticker.bid_price,
-                    0.07946700,
-                    ulps = 2
-                ));
-                assert!(approx_eq!(f64, second_ticker.bid_qty, 9.00000000, ulps = 2));
-                assert!(approx_eq!(
-                    f64,
-                    second_ticker.ask_price,
-                    100000.00000000,
-                    ulps = 2
-                ));
-                assert!(approx_eq!(
-                    f64,
-                    second_ticker.ask_qty,
-                    1000.00000000,
-                    ulps = 2
-                ));
+                assert_eq!(second_ticker.bid_price, Decimal::from_str("0.07946700").unwrap());
+                assert_eq!(second_ticker.bid_qty, Decimal::new(9, 0));
+                assert_eq!(second_ticker.ask_price, Decimal::from_str("100000.00").unwrap());
+                assert_eq!(second_ticker.ask_qty, Decimal::new(1000, 0));
             }
         }
     }
@@ -198,10 +168,10 @@ mod tests {
         mock_get_book_ticker.assert();
 
         assert_eq!(book_ticker.symbol, "LTCBTC");
-        assert!(approx_eq!(f64, book_ticker.bid_price, 4.00000000, ulps = 2));
-        assert!(approx_eq!(f64, book_ticker.bid_qty, 431.00000000, ulps = 2));
-        assert!(approx_eq!(f64, book_ticker.ask_price, 4.00000200, ulps = 2));
-        assert!(approx_eq!(f64, book_ticker.ask_qty, 9.00000000, ulps = 2));
+        assert_eq!(book_ticker.bid_price, Decimal::new(4, 0));
+        assert_eq!(book_ticker.bid_qty, Decimal::new(431, 0));
+        assert_eq!(book_ticker.ask_price, Decimal::from_str("4.000002").unwrap());
+        assert_eq!(book_ticker.ask_qty, Decimal::new(9, 0));
     }
 
     #[test]
@@ -224,34 +194,14 @@ mod tests {
         assert_eq!(price_stats.price_change, "-94.99999800");
         assert_eq!(price_stats.price_change_percent, "-95.960");
         assert_eq!(price_stats.weighted_avg_price, "0.29628482");
-        assert!(approx_eq!(
-            f64,
-            price_stats.prev_close_price,
-            0.10002000,
-            ulps = 2
-        ));
-        assert!(approx_eq!(
-            f64,
-            price_stats.last_price,
-            4.00000200,
-            ulps = 2
-        ));
-        assert!(approx_eq!(f64, price_stats.bid_price, 4.00000000, ulps = 2));
-        assert!(approx_eq!(f64, price_stats.ask_price, 4.00000200, ulps = 2));
-        assert!(approx_eq!(
-            f64,
-            price_stats.open_price,
-            99.00000000,
-            ulps = 2
-        ));
-        assert!(approx_eq!(
-            f64,
-            price_stats.high_price,
-            100.00000000,
-            ulps = 2
-        ));
-        assert!(approx_eq!(f64, price_stats.low_price, 0.10000000, ulps = 2));
-        assert!(approx_eq!(f64, price_stats.volume, 8913.30000000, ulps = 2));
+        assert_eq!(price_stats.prev_close_price, Decimal::from_str("0.10002").unwrap());
+        assert_eq!(price_stats.last_price, Decimal::from_str("4.000002").unwrap());
+        assert_eq!(price_stats.bid_price, Decimal::from_str("4.0").unwrap());
+        assert_eq!(price_stats.ask_price, Decimal::from_str("4.000002").unwrap());
+        assert_eq!(price_stats.open_price, Decimal::from_str("99.000").unwrap());
+        assert_eq!(price_stats.high_price, Decimal::from_str("100.0000").unwrap());
+        assert_eq!(price_stats.low_price, Decimal::from_str("0.1").unwrap());
+        assert_eq!(price_stats.volume, Decimal::from_str("8913.30").unwrap());
         assert_eq!(price_stats.open_time, 1499783499040);
         assert_eq!(price_stats.close_time, 1499869899040);
         assert_eq!(price_stats.first_id, 28385);
@@ -282,34 +232,14 @@ mod tests {
         assert_eq!(price_stats.price_change, "-94.99999800");
         assert_eq!(price_stats.price_change_percent, "-95.960");
         assert_eq!(price_stats.weighted_avg_price, "0.29628482");
-        assert!(approx_eq!(
-            f64,
-            price_stats.prev_close_price,
-            0.10002000,
-            ulps = 2
-        ));
-        assert!(approx_eq!(
-            f64,
-            price_stats.last_price,
-            4.00000200,
-            ulps = 2
-        ));
-        assert!(approx_eq!(f64, price_stats.bid_price, 4.00000000, ulps = 2));
-        assert!(approx_eq!(f64, price_stats.ask_price, 4.00000200, ulps = 2));
-        assert!(approx_eq!(
-            f64,
-            price_stats.open_price,
-            99.00000000,
-            ulps = 2
-        ));
-        assert!(approx_eq!(
-            f64,
-            price_stats.high_price,
-            100.00000000,
-            ulps = 2
-        ));
-        assert!(approx_eq!(f64, price_stats.low_price, 0.10000000, ulps = 2));
-        assert!(approx_eq!(f64, price_stats.volume, 8913.30000000, ulps = 2));
+        assert_eq!(price_stats.prev_close_price, Decimal::from_str("0.10002").unwrap());
+        assert_eq!(price_stats.last_price, Decimal::from_str("4.00000200").unwrap());
+        assert_eq!(price_stats.bid_price, Decimal::from_str("4.0").unwrap());
+        assert_eq!(price_stats.ask_price, Decimal::from_str("4.000002").unwrap());
+        assert_eq!(price_stats.open_price, Decimal::from_str("99.000").unwrap());
+        assert_eq!(price_stats.high_price, Decimal::from_str("100.0000").unwrap());
+        assert_eq!(price_stats.low_price, Decimal::from_str("0.1").unwrap());
+        assert_eq!(price_stats.volume, Decimal::from_str("8913.30").unwrap());
         assert_eq!(price_stats.open_time, 1499783499040);
         assert_eq!(price_stats.close_time, 1499869899040);
         assert_eq!(price_stats.first_id, 28385);

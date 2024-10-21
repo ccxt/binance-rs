@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
-use crate::model::{string_or_float, string_or_float_opt, string_or_bool};
+use crate::model::{string_or_decimal, string_or_decimal_opt, string_or_bool};
+use rust_decimal::prelude::*;
 
 pub use crate::model::{
     Asks, Bids, BookTickers, Filters, KlineSummaries, KlineSummary, RateLimit, ServerTime,
@@ -56,20 +57,20 @@ pub struct PriceStats {
     pub price_change: String,
     pub price_change_percent: String,
     pub weighted_avg_price: String,
-    #[serde(with = "string_or_float")]
-    pub last_price: f64,
-    #[serde(with = "string_or_float")]
-    pub open_price: f64,
-    #[serde(with = "string_or_float")]
-    pub high_price: f64,
-    #[serde(with = "string_or_float")]
-    pub low_price: f64,
-    #[serde(with = "string_or_float")]
-    pub volume: f64,
-    #[serde(with = "string_or_float")]
-    pub quote_volume: f64,
-    #[serde(with = "string_or_float")]
-    pub last_qty: f64,
+    #[serde(with = "string_or_decimal")]
+    pub last_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub open_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub high_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub low_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub volume: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub quote_volume: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub last_qty: Decimal,
     pub open_time: u64,
     pub close_time: u64,
     pub first_id: u64,
@@ -81,20 +82,20 @@ pub struct PriceStats {
 #[serde(rename_all = "camelCase")]
 pub struct TradeHistory {
     pub buyer: bool,
-    #[serde(with = "string_or_float")]
-    pub commission: f64,
+    #[serde(with = "string_or_decimal")]
+    pub commission: Decimal,
     pub commission_asset: String,
     pub id: u64,
     pub maker: bool,
     pub order_id: u64,
-    #[serde(with = "string_or_float")]
-    pub price: f64,
-    #[serde(with = "string_or_float")]
-    pub qty: f64,
-    #[serde(with = "string_or_float")]
-    pub quote_qty: f64,
-    #[serde(with = "string_or_float")]
-    pub realized_pnl: f64,
+    #[serde(with = "string_or_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub qty: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub quote_qty: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub realized_pnl: Decimal,
     pub side: String,
     pub position_side: String,
     pub symbol: String,
@@ -112,12 +113,12 @@ pub enum Trades {
 pub struct Trade {
     pub id: u64,
     pub is_buyer_maker: bool,
-    #[serde(with = "string_or_float")]
-    pub price: f64,
-    #[serde(with = "string_or_float")]
-    pub qty: f64,
-    #[serde(with = "string_or_float")]
-    pub quote_qty: f64,
+    #[serde(with = "string_or_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub qty: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub quote_qty: Decimal,
     pub time: u64,
 }
 
@@ -140,10 +141,10 @@ pub struct AggTrade {
     pub last_id: u64,
     #[serde(rename = "m")]
     pub maker: bool,
-    #[serde(rename = "p", with = "string_or_float")]
-    pub price: f64,
-    #[serde(rename = "q", with = "string_or_float")]
-    pub qty: f64,
+    #[serde(rename = "p", with = "string_or_decimal")]
+    pub price: Decimal,
+    #[serde(rename = "q", with = "string_or_decimal")]
+    pub qty: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -156,10 +157,10 @@ pub enum MarkPrices {
 #[serde(rename_all = "camelCase")]
 pub struct MarkPrice {
     pub symbol: String,
-    #[serde(with = "string_or_float")]
-    pub mark_price: f64,
-    #[serde(with = "string_or_float")]
-    pub last_funding_rate: f64,
+    #[serde(with = "string_or_decimal")]
+    pub mark_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub last_funding_rate: Decimal,
     pub next_funding_time: u64,
     pub time: u64,
 }
@@ -173,14 +174,14 @@ pub enum LiquidationOrders {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct LiquidationOrder {
-    #[serde(with = "string_or_float")]
-    pub average_price: f64,
-    #[serde(with = "string_or_float")]
-    pub executed_qty: f64,
-    #[serde(with = "string_or_float")]
-    pub orig_qty: f64,
-    #[serde(with = "string_or_float")]
-    pub price: f64,
+    #[serde(with = "string_or_decimal")]
+    pub average_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub executed_qty: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub orig_qty: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub price: Decimal,
     pub side: String,
     pub status: String,
     pub symbol: String,
@@ -192,8 +193,8 @@ pub struct LiquidationOrder {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenInterest {
-    #[serde(with = "string_or_float")]
-    pub open_interest: f64,
+    #[serde(with = "string_or_decimal")]
+    pub open_interest: Decimal,
     pub symbol: String,
 }
 
@@ -210,35 +211,35 @@ pub struct OpenInterestHist {
 #[serde(rename_all = "camelCase")]
 pub struct Order {
     pub client_order_id: String,
-    #[serde(with = "string_or_float", default = "default_stop_price")]
-    pub cum_qty: f64,
-    #[serde(with = "string_or_float")]
-    pub cum_quote: f64,
-    #[serde(with = "string_or_float")]
-    pub executed_qty: f64,
+    #[serde(with = "string_or_decimal", default = "default_stop_price")]
+    pub cum_qty: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub cum_quote: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub executed_qty: Decimal,
     pub order_id: u64,
-    #[serde(with = "string_or_float")]
-    pub avg_price: f64,
-    #[serde(with = "string_or_float")]
-    pub orig_qty: f64,
-    #[serde(with = "string_or_float")]
-    pub price: f64,
+    #[serde(with = "string_or_decimal")]
+    pub avg_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub orig_qty: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub price: Decimal,
     pub side: String,
     pub reduce_only: bool,
     pub position_side: String,
     pub status: String,
-    #[serde(with = "string_or_float", default = "default_stop_price")]
-    pub stop_price: f64,
+    #[serde(with = "string_or_decimal", default = "default_stop_price")]
+    pub stop_price: Decimal,
     pub close_position: bool,
     pub symbol: String,
     pub time_in_force: String,
     #[serde(rename = "type")]
     pub order_type: String,
     pub orig_type: String,
-    #[serde(with = "string_or_float", default = "default_activation_price")]
-    pub activation_price: f64,
-    #[serde(with = "string_or_float", default = "default_price_rate")]
-    pub price_rate: f64,
+    #[serde(with = "string_or_decimal", default = "default_activation_price")]
+    pub activation_price: Decimal,
+    #[serde(with = "string_or_decimal", default = "default_price_rate")]
+    pub price_rate: Decimal,
     pub update_time: u64,
     pub working_type: String,
     pub price_protect: bool,
@@ -248,23 +249,23 @@ pub struct Order {
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
     pub client_order_id: String,
-    #[serde(with = "string_or_float")]
-    pub cum_qty: f64,
-    #[serde(with = "string_or_float")]
-    pub cum_quote: f64,
-    #[serde(with = "string_or_float")]
-    pub executed_qty: f64,
+    #[serde(with = "string_or_decimal")]
+    pub cum_qty: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub cum_quote: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub executed_qty: Decimal,
     pub order_id: u64,
-    #[serde(with = "string_or_float")]
-    pub avg_price: f64,
-    #[serde(with = "string_or_float")]
-    pub orig_qty: f64,
+    #[serde(with = "string_or_decimal")]
+    pub avg_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub orig_qty: Decimal,
     pub reduce_only: bool,
     pub side: String,
     pub position_side: String,
     pub status: String,
-    #[serde(with = "string_or_float")]
-    pub stop_price: f64,
+    #[serde(with = "string_or_decimal")]
+    pub stop_price: Decimal,
     pub close_position: bool,
     pub symbol: String,
     pub time_in_force: String,
@@ -272,11 +273,11 @@ pub struct Transaction {
     pub type_name: String,
     pub orig_type: String,
     #[serde(default)]
-    #[serde(with = "string_or_float_opt")]
-    pub activate_price: Option<f64>,
+    #[serde(with = "string_or_decimal_opt")]
+    pub activate_price: Option<Decimal>,
     #[serde(default)]
-    #[serde(with = "string_or_float_opt")]
-    pub price_rate: Option<f64>,
+    #[serde(with = "string_or_decimal_opt")]
+    pub price_rate: Option<Decimal>,
     pub update_time: u64,
     pub working_type: String,
     price_protect: bool,
@@ -286,35 +287,35 @@ pub struct Transaction {
 #[serde(rename_all = "camelCase")]
 pub struct CanceledOrder {
     pub client_order_id: String,
-    #[serde(with = "string_or_float")]
-    pub cum_qty: f64,
-    #[serde(with = "string_or_float")]
-    pub cum_quote: f64,
-    #[serde(with = "string_or_float")]
-    pub executed_qty: f64,
+    #[serde(with = "string_or_decimal")]
+    pub cum_qty: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub cum_quote: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub executed_qty: Decimal,
     pub order_id: u64,
-    #[serde(with = "string_or_float")]
-    pub orig_qty: f64,
+    #[serde(with = "string_or_decimal")]
+    pub orig_qty: Decimal,
     pub orig_type: String,
-    #[serde(with = "string_or_float")]
-    pub price: f64,
+    #[serde(with = "string_or_decimal")]
+    pub price: Decimal,
     pub reduce_only: bool,
     pub side: String,
     pub position_side: String,
     pub status: String,
-    #[serde(with = "string_or_float")]
-    pub stop_price: f64,
+    #[serde(with = "string_or_decimal")]
+    pub stop_price: Decimal,
     pub close_position: bool,
     pub symbol: String,
     pub time_in_force: String,
     #[serde(rename = "type")]
     pub type_name: String,
     #[serde(default)]
-    #[serde(with = "string_or_float_opt")]
-    pub activate_price: Option<f64>,
+    #[serde(with = "string_or_decimal_opt")]
+    pub activate_price: Option<Decimal>,
     #[serde(default)]
-    #[serde(with = "string_or_float_opt")]
-    pub price_rate: Option<f64>,
+    #[serde(with = "string_or_decimal_opt")]
+    pub price_rate: Option<Decimal>,
     pub update_time: u64,
     pub working_type: String,
     price_protect: bool,
@@ -323,30 +324,30 @@ pub struct CanceledOrder {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct PositionRisk {
-    #[serde(with = "string_or_float")]
-    pub entry_price: f64,
+    #[serde(with = "string_or_decimal")]
+    pub entry_price: Decimal,
     pub margin_type: String,
     #[serde(with = "string_or_bool")]
     pub is_auto_add_margin: bool,
-    #[serde(with = "string_or_float")]
-    pub isolated_margin: f64,
+    #[serde(with = "string_or_decimal")]
+    pub isolated_margin: Decimal,
     pub leverage: String,
-    #[serde(with = "string_or_float")]
-    pub liquidation_price: f64,
-    #[serde(with = "string_or_float")]
-    pub mark_price: f64,
-    #[serde(with = "string_or_float")]
-    pub max_notional_value: f64,
-    #[serde(with = "string_or_float", rename = "positionAmt")]
-    pub position_amount: f64,
+    #[serde(with = "string_or_decimal")]
+    pub liquidation_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub mark_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub max_notional_value: Decimal,
+    #[serde(with = "string_or_decimal", rename = "positionAmt")]
+    pub position_amount: Decimal,
     pub symbol: String,
-    #[serde(with = "string_or_float", rename = "unRealizedProfit")]
-    pub unrealized_profit: f64,
+    #[serde(with = "string_or_decimal", rename = "unRealizedProfit")]
+    pub unrealized_profit: Decimal,
     pub position_side: String,
-    #[serde(with = "string_or_float")]
-    pub notional: f64,
-    #[serde(with = "string_or_float")]
-    pub isolated_wallet: f64,
+    #[serde(with = "string_or_decimal")]
+    pub notional: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub isolated_wallet: Decimal,
     pub update_time: u64,
 }
 
@@ -354,28 +355,28 @@ pub struct PositionRisk {
 #[serde(rename_all = "camelCase")]
 pub struct FuturesAsset {
     pub asset: String,
-    #[serde(with = "string_or_float")]
-    pub wallet_balance: f64,
-    #[serde(with = "string_or_float")]
-    pub unrealized_profit: f64,
-    #[serde(with = "string_or_float")]
-    pub margin_balance: f64,
-    #[serde(with = "string_or_float")]
-    pub maint_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub initial_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub position_initial_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub open_order_initial_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub max_withdraw_amount: f64,
-    #[serde(with = "string_or_float")]
-    pub cross_wallet_balance: f64,
-    #[serde(with = "string_or_float")]
-    pub cross_un_pnl: f64,
-    #[serde(with = "string_or_float")]
-    pub available_balance: f64,
+    #[serde(with = "string_or_decimal")]
+    pub wallet_balance: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub unrealized_profit: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub margin_balance: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub maint_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub initial_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub position_initial_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub open_order_initial_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub max_withdraw_amount: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub cross_wallet_balance: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub cross_un_pnl: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub available_balance: Decimal,
     #[serde(with = "string_or_bool")]
     pub margin_available: bool,
     pub update_time: u64,
@@ -385,72 +386,72 @@ pub struct FuturesAsset {
 #[serde(rename_all = "camelCase")]
 pub struct FuturesPosition {
     pub symbol: String,
-    #[serde(with = "string_or_float")]
-    pub initial_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub maint_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub unrealized_profit: f64,
-    #[serde(with = "string_or_float")]
-    pub position_initial_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub open_order_initial_margin: f64,
+    #[serde(with = "string_or_decimal")]
+    pub initial_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub maint_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub unrealized_profit: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub position_initial_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub open_order_initial_margin: Decimal,
     pub leverage: String,
     #[serde(with = "string_or_bool")]
     pub isolated: bool,
-    #[serde(with = "string_or_float")]
-    pub entry_price: f64,
-    #[serde(with = "string_or_float")]
-    pub max_notional: f64,
+    #[serde(with = "string_or_decimal")]
+    pub entry_price: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub max_notional: Decimal,
     pub position_side: String,
-    #[serde(with = "string_or_float", rename = "positionAmt")]
-    pub position_amount: f64,
-    #[serde(with = "string_or_float")]
-    pub notional: f64,
-    #[serde(with = "string_or_float")]
-    pub isolated_wallet: f64,
+    #[serde(with = "string_or_decimal", rename = "positionAmt")]
+    pub position_amount: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub notional: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub isolated_wallet: Decimal,
     pub update_time: u64,
-    #[serde(with = "string_or_float")]
-    pub bid_notional: f64,
-    #[serde(with = "string_or_float")]
-    pub ask_notional: f64,
+    #[serde(with = "string_or_decimal")]
+    pub bid_notional: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub ask_notional: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountInformation {
-    #[serde(with = "string_or_float")]
-    pub fee_tier: f64,
+    #[serde(with = "string_or_decimal")]
+    pub fee_tier: Decimal,
     #[serde(with = "string_or_bool")]
     pub can_trade: bool,
     #[serde(with = "string_or_bool")]
     pub can_deposit: bool,
     #[serde(with = "string_or_bool")]
     pub can_withdraw: bool,
-    #[serde(with = "string_or_float")]
-    pub update_time: f64,
-    #[serde(with = "string_or_float")]
-    pub total_initial_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub total_maint_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub total_wallet_balance: f64,
-    #[serde(with = "string_or_float")]
-    pub total_unrealized_profit: f64,
-    #[serde(with = "string_or_float")]
-    pub total_margin_balance: f64,
-    #[serde(with = "string_or_float")]
-    pub total_position_initial_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub total_open_order_initial_margin: f64,
-    #[serde(with = "string_or_float")]
-    pub total_cross_wallet_balance: f64,
-    #[serde(with = "string_or_float")]
-    pub total_cross_un_pnl: f64,
-    #[serde(with = "string_or_float")]
-    pub available_balance: f64,
-    #[serde(with = "string_or_float")]
-    pub max_withdraw_amount: f64,
+    #[serde(with = "string_or_decimal")]
+    pub update_time: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub total_initial_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub total_maint_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub total_wallet_balance: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub total_unrealized_profit: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub total_margin_balance: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub total_position_initial_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub total_open_order_initial_margin: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub total_cross_wallet_balance: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub total_cross_un_pnl: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub available_balance: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub max_withdraw_amount: Decimal,
     pub assets: Vec<FuturesAsset>,
     pub positions: Vec<FuturesPosition>,
 }
@@ -460,16 +461,16 @@ pub struct AccountInformation {
 pub struct AccountBalance {
     pub account_alias: String,
     pub asset: String,
-    #[serde(with = "string_or_float")]
-    pub balance: f64,
-    #[serde(with = "string_or_float")]
-    pub cross_wallet_balance: f64,
-    #[serde(with = "string_or_float", rename = "crossUnPnl")]
-    pub cross_unrealized_pnl: f64,
-    #[serde(with = "string_or_float")]
-    pub available_balance: f64,
-    #[serde(with = "string_or_float")]
-    pub max_withdraw_amount: f64,
+    #[serde(with = "string_or_decimal")]
+    pub balance: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub cross_wallet_balance: Decimal,
+    #[serde(with = "string_or_decimal", rename = "crossUnPnl")]
+    pub cross_unrealized_pnl: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub available_balance: Decimal,
+    #[serde(with = "string_or_decimal")]
+    pub max_withdraw_amount: Decimal,
     pub margin_available: bool,
     pub update_time: u64,
 }
@@ -478,19 +479,19 @@ pub struct AccountBalance {
 #[serde(rename_all = "camelCase")]
 pub struct ChangeLeverageResponse {
     pub leverage: u8,
-    #[serde(with = "string_or_float")]
-    pub max_notional_value: f64,
+    #[serde(with = "string_or_decimal")]
+    pub max_notional_value: Decimal,
     pub symbol: String,
 }
 
-fn default_stop_price() -> f64 {
-    0.0
+fn default_stop_price() -> Decimal {
+    Decimal::ZERO
 }
-fn default_activation_price() -> f64 {
-    0.0
+fn default_activation_price() -> Decimal {
+    Decimal::ZERO
 }
-fn default_price_rate() -> f64 {
-    0.0
+fn default_price_rate() -> Decimal {
+    Decimal::ZERO
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -617,8 +618,8 @@ pub struct OrderTradeEvent {
 pub struct Income {
     pub symbol: String,
     pub income_type: String,
-    #[serde(with = "string_or_float")]
-    pub income: f64,
+    #[serde(with = "string_or_decimal")]
+    pub income: Decimal,
     pub asset: String,
     pub info: String,
     pub time: u64,
