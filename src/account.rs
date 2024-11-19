@@ -760,7 +760,7 @@ impl Account {
             S: Into<String>,
     {
         if !is_start_time_valid(&start_time) {
-            return bail!("Start time should be less than the current time");
+            bail!("Start time should be less than the current time");
         }
 
         let mut parameters: BTreeMap<String, String> = BTreeMap::new();
@@ -777,10 +777,10 @@ impl Account {
             S: Into<String>,
     {
         if end_time <= start_time {
-            return bail!("End time should be greater than start time");
+            bail!("End time should be greater than start time");
         }
         if !is_start_time_valid(&start_time) {
-            return bail!("Start time should be less than the current time");
+            bail!("Start time should be less than the current time");
         }
         self.get_trades(symbol, start_time, end_time)
     }
