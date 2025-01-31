@@ -137,6 +137,7 @@ pub struct AccountInformation {
     pub can_withdraw: bool,
     pub can_deposit: bool,
     pub balances: Vec<Balance>,
+    pub permissions: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
