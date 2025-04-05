@@ -3,7 +3,7 @@ use crate::config::Config;
 use crate::model::{
     AccountUpdateEvent, AggrTradesEvent, BookTickerEvent, ContinuousKlineEvent, DayTickerEvent,
     DepthOrderBookEvent, IndexKlineEvent, IndexPriceEvent, KlineEvent, LiquidationEvent,
-    MarkPriceEvent, MiniTickerEvent, OrderBook, TradeEvent, UserDataStreamExpiredEvent,
+    MarkPriceEvent, MiniTickerEvent, OrderBook, UserDataStreamExpiredEvent,
 };
 use crate::futures::model;
 use error_chain::bail;
@@ -15,6 +15,8 @@ use tungstenite::{connect, Message};
 use tungstenite::protocol::WebSocket;
 use tungstenite::stream::MaybeTlsStream;
 use tungstenite::handshake::client::Response;
+
+use super::model::Trade;
 
 #[allow(clippy::all)]
 enum FuturesWebsocketAPI {
@@ -55,7 +57,7 @@ pub enum FuturesWebsocketEvent {
     AccountUpdate(AccountUpdateEvent),
     OrderTrade(model::OrderTradeEvent),
     AggrTrades(AggrTradesEvent),
-    Trade(TradeEvent),
+    Trade(Trade),
     OrderBook(OrderBook),
     DayTicker(DayTickerEvent),
     MiniTicker(MiniTickerEvent),
@@ -92,7 +94,7 @@ enum FuturesEvents {
     IndexPriceEvent(IndexPriceEvent),
     MarkPriceEvent(MarkPriceEvent),
     VecMarkPriceEvent(Vec<MarkPriceEvent>),
-    TradeEvent(TradeEvent),
+    TradeEvent(Trade),
     KlineEvent(KlineEvent),
     ContinuousKlineEvent(ContinuousKlineEvent),
     IndexKlineEvent(IndexKlineEvent),

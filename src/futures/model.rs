@@ -110,16 +110,28 @@ pub enum Trades {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Trade {
-    pub id: u64,
-    pub is_buyer_maker: bool,
-    #[serde(with = "string_or_float")]
-    pub price: f64,
-    #[serde(with = "string_or_float")]
-    pub qty: f64,
-    #[serde(with = "string_or_float")]
-    pub quote_qty: f64,
+    #[serde(rename = "T")]
     pub time: u64,
+
+    #[serde(rename = "s")]
+    pub symbol: String,
+
+    #[serde(rename = "t")]
+    pub transaction_id: i64,
+
+    #[serde(rename = "p", with = "string_or_float")]
+    pub price: f64,
+
+    #[serde(rename = "q", with = "string_or_float")]
+    pub quantity: f64,
+
+    #[serde(rename = "X")]
+    pub order_type: String,
+
+    #[serde(rename = "m")]
+    pub is_buyer_maker: bool,
 }
+
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(untagged)]
@@ -611,6 +623,8 @@ pub struct OrderTradeEvent {
     #[serde(rename = "o")]
     pub order: OrderUpdate,
 }
+
+
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
