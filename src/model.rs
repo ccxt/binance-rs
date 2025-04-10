@@ -45,6 +45,7 @@ pub struct Symbol {
     pub filters: Vec<Filters>,
 }
 
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "filterType")]
 pub enum Filters {
@@ -124,6 +125,8 @@ pub enum Filters {
         min_trailing_below_delta: Option<u16>,
         max_trailing_below_delta: Option<u16>,
     },
+    #[serde(untagged)]
+    Unknown(serde_json::Map<String, serde_json::Value>),
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
