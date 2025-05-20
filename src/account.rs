@@ -756,8 +756,8 @@ impl Account {
 
     // Trade history starting from selected date
     pub fn trade_history_from<S>(&self, symbol: S, start_time: u64) -> Result<Vec<TradeHistory>>
-        where
-            S: Into<String>,
+    where
+        S: Into<String>,
     {
         if !is_start_time_valid(&start_time) {
             return bail!("Start time should be less than the current time");
@@ -772,9 +772,11 @@ impl Account {
     }
 
     // Trade history starting from selected time to some time
-    pub fn trade_history_from_to<S>(&self, symbol: S, start_time: u64, end_time: u64) -> Result<Vec<TradeHistory>>
-        where
-            S: Into<String>,
+    pub fn trade_history_from_to<S>(
+        &self, symbol: S, start_time: u64, end_time: u64,
+    ) -> Result<Vec<TradeHistory>>
+    where
+        S: Into<String>,
     {
         if end_time <= start_time {
             return bail!("End time should be greater than start time");
@@ -786,8 +788,8 @@ impl Account {
     }
 
     fn get_trades<S>(&self, symbol: S, start_time: u64, end_time: u64) -> Result<Vec<TradeHistory>>
-        where
-            S: Into<String>,
+    where
+        S: Into<String>,
     {
         let mut trades = match self.trade_history_from(symbol, start_time) {
             Ok(trades) => trades,

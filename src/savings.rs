@@ -1,5 +1,8 @@
 use crate::util::build_signed_request;
-use crate::model::{AssetDetail, CoinInfo, DepositAddress, SpotFuturesTransferType, TransactionId};
+use crate::model::{
+    AssetDetail, CoinInfo, DepositAddress, FlexibleProductInfo, PaginatedResponse,
+    SpotFuturesTransferType, TransactionId,
+};
 use crate::client::Client;
 use crate::errors::Result;
 use std::collections::BTreeMap;
@@ -62,5 +65,11 @@ impl Savings {
         let request = build_signed_request(parameters, self.recv_window)?;
         self.client
             .post_signed(API::Savings(Sapi::SpotFuturesTransfer), request)
+    }
+
+    pub fn simple_earn_flexible_list(&self) -> Result<PaginatedResponse<FlexibleProductInfo>> {
+        let request = build_signed_request(BTreeMap::new(), self.recv_window)?;
+        self.client
+            .get_signed(API::Savings(Sapi::SimpleEarnFlexible), Some(request))
     }
 }

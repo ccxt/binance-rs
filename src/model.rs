@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use serde_json::{from_value, Value};
 use crate::errors::{Error, ErrorKind, Result};
@@ -1325,6 +1327,40 @@ pub struct DepositAddress {
     pub coin: String,
     pub tag: String,
     pub url: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PaginatedResponse<T> {
+    #[serde(rename = "rows")]
+    pub data: Vec<T>,
+    pub total: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct FlexibleProductInfo {
+    #[serde(with = "string_or_float")]
+    pub total_amount: f64,
+    pub tier_annual_percentage_rate: HashMap<String, f64>,
+    #[serde(with = "string_or_float")]
+    pub latest_annual_percentage_rate: f64,
+    #[serde(with = "string_or_float")]
+    pub yesterday_airdrop_percentage_rate: f64,
+    pub asset: String,
+    pub air_drop_asset: String,
+    pub can_redeem: bool,
+    #[serde(with = "string_or_float")]
+    pub collateral_amount: f64,
+    pub product_id: String,
+    #[serde(with = "string_or_float")]
+    pub yesterday_real_time_rewards: f64,
+    #[serde(with = "string_or_float")]
+    pub cumulative_bonus_rewards: f64,
+    #[serde(with = "string_or_float")]
+    pub cumulative_real_time_rewards: f64,
+    #[serde(with = "string_or_float")]
+    pub cumulative_total_rewards: f64,
+    pub auto_subscribe: bool,
 }
 
 pub(crate) mod string_or_float {
