@@ -1,7 +1,7 @@
 use crate::util::build_signed_request;
 use crate::model::{
-    AssetDetail, CoinInfo, DepositAddress, FlexibleProductInfo, PaginatedResponse,
-    SpotFuturesTransferType, TransactionId,
+    AssetDetail, CoinInfo, DepositAddress, FlexibleProductInfo, LockedProductInfo,
+    PaginatedResponse, SpotFuturesTransferType, TransactionId,
 };
 use crate::client::Client;
 use crate::errors::Result;
@@ -71,5 +71,11 @@ impl Savings {
         let request = build_signed_request(BTreeMap::new(), self.recv_window)?;
         self.client
             .get_signed(API::Savings(Sapi::SimpleEarnFlexible), Some(request))
+    }
+
+    pub fn simple_earn_locked_list(&self) -> Result<PaginatedResponse<LockedProductInfo>> {
+        let request = build_signed_request(BTreeMap::new(), self.recv_window)?;
+        self.client
+            .get_signed(API::Savings(Sapi::SimpleEarnLocked), Some(request))
     }
 }

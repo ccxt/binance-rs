@@ -940,4 +940,51 @@ mod tests {
         assert_eq!(position.cumulative_total_rewards, 0.45459183);
         assert_eq!(position.auto_subscribe, true);
     }
+
+    #[test]
+    fn locked_product_position() {
+        let mut server = Server::new();
+        let mock = server
+            .mock("GET", "/sapi/v1/simple-earn/locked/position")
+            .with_header("content-type", "application/json;charset=UTF-8")
+            .match_query(Matcher::Regex(
+                "recvWindow=1234&timestamp=\\d+&signature=.*".into(),
+            ))
+            .with_body_from_file("tests/mocks/account/locked_product_position.json")
+            .create();
+
+        let config = Config::default()
+            .set_rest_api_endpoint(server.url())
+            .set_recv_window(1234);
+        let account: Savings = Binance::new_with_config(None, None, &config);
+        let _ = env_logger::try_init();
+        let list = account.simple_earn_locked_list().unwrap();
+
+        mock.assert();
+
+        assert_eq!(list.data.len(), 1);
+
+        let position = &list.data[0];
+        assert_eq!(position.project_id, "Axs*90");
+        assert_eq!(position.asset, "AXS");
+        assert_eq!(position.amount, 122.09202928);
+        assert_eq!(position.reward_asset, "AXS");
+        assert_eq!(position.apy, 0.2032);
+        assert_eq!(position.reward_amt, 5.17181528);
+        assert_eq!(position.extra_reward_asset, "BNB");
+        assert_eq!(position.extra_reward_apr, 0.0203);
+        assert_eq!(position.est_extra_reward_amt, 5.17181528);
+        assert_eq!(position.boost_reward_asset, "AXS");
+        assert_eq!(position.boost_apr, 0.0121);
+        assert_eq!(position.total_boost_reward_amt, 3.98201829);
+        assert_eq!(position.next_pay, 1.29295383);
+        assert_eq!(position.pay_period, "1");
+        assert_eq!(position.redeem_amount_early, 2802.24068892);
+        assert_eq!(position.redeem_to, "FLEXIBLE");
+        assert_eq!(position.status, "HOLDING");
+        assert_eq!(position.can_redeem_early, true);
+        assert_eq!(position.can_fast_redemption, true);
+        assert_eq!(position.auto_subscribe, true);
+        assert_eq!(position.can_re_stake, true);
+    }
 }

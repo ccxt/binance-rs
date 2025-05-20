@@ -1363,6 +1363,72 @@ pub struct FlexibleProductInfo {
     pub auto_subscribe: bool,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct LockedProductInfo {
+    pub position_id: u64,
+    pub parent_position_id: u64,
+    pub project_id: String,
+    pub asset: String,
+
+    #[serde(with = "string_or_float")]
+    pub amount: f64,
+
+    pub purchase_time: String,
+    pub duration: String,
+    pub accrual_days: String,
+    pub reward_asset: String,
+
+    #[serde(with = "string_or_float")]
+    #[serde(default, rename = "APY")]
+    pub apy: f64,
+
+    #[serde(rename = "rewardAmt", with = "string_or_float")]
+    pub reward_amt: f64,
+
+    pub extra_reward_asset: String,
+
+    #[serde(rename = "extraRewardAPR", with = "string_or_float")]
+    pub extra_reward_apr: f64,
+
+    #[serde(rename = "estExtraRewardAmt", with = "string_or_float")]
+    pub est_extra_reward_amt: f64,
+
+    pub boost_reward_asset: String,
+
+    #[serde(rename = "boostApr", with = "string_or_float")]
+    pub boost_apr: f64,
+
+    #[serde(rename = "totalBoostRewardAmt", with = "string_or_float")]
+    pub total_boost_reward_amt: f64,
+
+    #[serde(rename = "nextPay", with = "string_or_float")]
+    pub next_pay: f64,
+
+    pub next_pay_date: String,
+    pub pay_period: String,
+
+    #[serde(rename = "redeemAmountEarly", with = "string_or_float")]
+    pub redeem_amount_early: f64,
+
+    pub rewards_end_date: String,
+    pub deliver_date: String,
+    pub redeem_period: String,
+
+    #[serde(rename = "redeemingAmt", with = "string_or_float")]
+    pub redeeming_amt: f64,
+
+    pub redeem_to: String,
+    pub partial_amt_deliver_date: String,
+    pub can_redeem_early: bool,
+    pub can_fast_redemption: bool,
+    pub auto_subscribe: bool,
+    #[serde(rename = "type")]
+    pub order_type: String,
+    pub status: String,
+    pub can_re_stake: bool,
+}
+
 pub(crate) mod string_or_float {
     use std::fmt;
 
