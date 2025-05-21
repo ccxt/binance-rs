@@ -1,6 +1,6 @@
 [package]
-name = "binance"
-version = "0.21.0"
+name = "binance_trop"
+version = "0.1.0"
 license = "MIT OR Apache-2.0"
 authors = ["Flavio Oliveira <ollivera-dev@protonmail.com>"]
 edition = "2021"
@@ -9,11 +9,8 @@ description = "Rust Library for the Binance API"
 keywords = ["cryptocurrency", "trading", "binance"]
 categories = ["api-bindings", "cryptography::cryptocurrencies"]
 documentation = "https://docs.rs/crate/binance/"
-repository = "https://github.com/wisespace-io/binance-rs"
+repository = "https://github.com/TropicalDog17/binance-rs"
 readme = "README.md"
-
-[badges]
-travis-ci = { repository = "wisespace-io/binance-rs" }
 
 [lib]
 name = "binance"
