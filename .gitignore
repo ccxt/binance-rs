@@ -4,3 +4,4 @@ Cargo.lock
 *.fmt
 *.iml
 .idea/*
+real_credential*

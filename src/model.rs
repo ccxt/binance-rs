@@ -1335,34 +1335,46 @@ pub struct PaginatedResponse<T> {
     pub data: Vec<T>,
     pub total: usize,
 }
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FlexibleProductInfo {
     #[serde(with = "string_or_float")]
     pub total_amount: f64,
-    pub tier_annual_percentage_rate: HashMap<String, f64>,
+
+    #[serde(default)]
+    pub tier_annual_percentage_rate: HashMap<String, String>,
+
     #[serde(with = "string_or_float")]
     pub latest_annual_percentage_rate: f64,
-    #[serde(with = "string_or_float")]
-    pub yesterday_airdrop_percentage_rate: f64,
+
     pub asset: String,
-    pub air_drop_asset: String,
     pub can_redeem: bool,
+
     #[serde(with = "string_or_float")]
     pub collateral_amount: f64,
+
     pub product_id: String,
+
     #[serde(with = "string_or_float")]
     pub yesterday_real_time_rewards: f64,
+
     #[serde(with = "string_or_float")]
     pub cumulative_bonus_rewards: f64,
+
     #[serde(with = "string_or_float")]
     pub cumulative_real_time_rewards: f64,
+
     #[serde(with = "string_or_float")]
     pub cumulative_total_rewards: f64,
-    pub auto_subscribe: bool,
-}
 
+    pub auto_subscribe: bool,
+
+    #[serde(default)]
+    pub yesterday_airdrop_percentage_rate: Option<f64>,
+
+    #[serde(default)]
+    pub air_drop_asset: Option<String>,
+}
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct LockedProductInfo {
@@ -1386,47 +1398,77 @@ pub struct LockedProductInfo {
     #[serde(rename = "rewardAmt", with = "string_or_float")]
     pub reward_amt: f64,
 
-    pub extra_reward_asset: String,
+    #[serde(default)]
+    pub extra_reward_asset: Option<String>,
 
-    #[serde(rename = "extraRewardAPR", with = "string_or_float")]
-    pub extra_reward_apr: f64,
+    #[serde(rename = "extraRewardAPR", with = "string_or_float_opt")]
+    #[serde(default)]
+    pub extra_reward_apr: Option<f64>,
 
-    #[serde(rename = "estExtraRewardAmt", with = "string_or_float")]
-    pub est_extra_reward_amt: f64,
+    #[serde(rename = "estExtraRewardAmt", with = "string_or_float_opt")]
+    #[serde(default)]
+    pub est_extra_reward_amt: Option<f64>,
 
-    pub boost_reward_asset: String,
+    #[serde(default)]
+    pub boost_reward_asset: Option<String>,
 
-    #[serde(rename = "boostApr", with = "string_or_float")]
-    pub boost_apr: f64,
+    #[serde(rename = "boostApr", with = "string_or_float_opt")]
+    #[serde(default)]
+    pub boost_apr: Option<f64>,
 
-    #[serde(rename = "totalBoostRewardAmt", with = "string_or_float")]
-    pub total_boost_reward_amt: f64,
+    #[serde(rename = "totalBoostRewardAmt", with = "string_or_float_opt")]
+    #[serde(default)]
+    pub total_boost_reward_amt: Option<f64>,
 
-    #[serde(rename = "nextPay", with = "string_or_float")]
-    pub next_pay: f64,
+    #[serde(rename = "nextPay", with = "string_or_float_opt")]
+    #[serde(default)]
+    pub next_pay: Option<f64>,
 
-    pub next_pay_date: String,
-    pub pay_period: String,
+    #[serde(default)]
+    pub next_pay_date: Option<String>,
 
-    #[serde(rename = "redeemAmountEarly", with = "string_or_float")]
-    pub redeem_amount_early: f64,
+    #[serde(default)]
+    pub pay_period: Option<String>,
 
-    pub rewards_end_date: String,
-    pub deliver_date: String,
-    pub redeem_period: String,
+    #[serde(rename = "redeemAmountEarly", with = "string_or_float_opt")]
+    #[serde(default)]
+    pub redeem_amount_early: Option<f64>,
 
-    #[serde(rename = "redeemingAmt", with = "string_or_float")]
-    pub redeeming_amt: f64,
+    #[serde(default)]
+    pub rewards_end_date: Option<String>,
 
-    pub redeem_to: String,
-    pub partial_amt_deliver_date: String,
-    pub can_redeem_early: bool,
-    pub can_fast_redemption: bool,
-    pub auto_subscribe: bool,
+    #[serde(default)]
+    pub deliver_date: Option<String>,
+
+    #[serde(default)]
+    pub redeem_period: Option<String>,
+
+    #[serde(rename = "redeemingAmt", with = "string_or_float_opt")]
+    #[serde(default)]
+    pub redeeming_amt: Option<f64>,
+
+    #[serde(default)]
+    pub redeem_to: Option<String>,
+
+    #[serde(default)]
+    pub partial_amt_deliver_date: Option<String>,
+
+    #[serde(default)]
+    pub can_redeem_early: Option<bool>,
+
+    #[serde(default)]
+    pub can_fast_redemption: Option<bool>,
+
+    #[serde(default)]
+    pub auto_subscribe: Option<bool>,
+
     #[serde(rename = "type")]
     pub order_type: String,
+
     pub status: String,
-    pub can_re_stake: bool,
+
+    #[serde(default)]
+    pub can_re_stake: Option<bool>,
 }
 
 pub(crate) mod string_or_float {

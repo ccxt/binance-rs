@@ -155,10 +155,21 @@ impl Client {
 
         Ok(custom_headers)
     }
-
     fn handler<T: DeserializeOwned>(&self, response: Response) -> Result<T> {
-        match response.status() {
-            StatusCode::OK => Ok(response.json::<T>()?),
+        // Save the status code before consuming the response body
+        let status = response.status();
+
+        // Get the response text (consumes the body)
+        let text = response.text()?;
+
+        println!("Response: {:?}", text);
+
+        match status {
+            StatusCode::OK => {
+                // Parse the text to T instead of using response.json()
+                let parsed: T = serde_json::from_str(&text)?;
+                Ok(parsed)
+            }
             StatusCode::INTERNAL_SERVER_ERROR => {
                 bail!("Internal Server Error");
             }
@@ -169,8 +180,8 @@ impl Client {
                 bail!("Unauthorized");
             }
             StatusCode::BAD_REQUEST => {
-                let error: BinanceContentError = response.json()?;
-
+                // Parse the text to error type instead of using response.json()
+                let error: BinanceContentError = serde_json::from_str(&text)?;
                 Err(ErrorKind::BinanceError(error).into())
             }
             s => {
