@@ -1379,16 +1379,16 @@ pub struct FlexibleProductInfo {
 #[serde(rename_all = "camelCase")]
 pub struct LockedProductInfo {
     pub position_id: u64,
-    pub parent_position_id: u64,
+    pub parent_position_id: Option<u64>,
     pub project_id: String,
     pub asset: String,
 
     #[serde(with = "string_or_float")]
     pub amount: f64,
 
-    pub purchase_time: String,
-    pub duration: String,
-    pub accrual_days: String,
+    pub purchase_time: u64,
+    pub duration: u64,
+    pub accrual_days: u64,
     pub reward_asset: String,
 
     #[serde(with = "string_or_float")]
@@ -1425,23 +1425,23 @@ pub struct LockedProductInfo {
     pub next_pay: Option<f64>,
 
     #[serde(default)]
-    pub next_pay_date: Option<String>,
+    pub next_pay_date: Option<u64>,
 
     #[serde(default)]
-    pub pay_period: Option<String>,
+    pub pay_period: Option<u64>,
 
     #[serde(rename = "redeemAmountEarly", with = "string_or_float_opt")]
     #[serde(default)]
     pub redeem_amount_early: Option<f64>,
 
     #[serde(default)]
-    pub rewards_end_date: Option<String>,
+    pub rewards_end_date: Option<u64>,
 
     #[serde(default)]
-    pub deliver_date: Option<String>,
+    pub deliver_date: Option<u64>,
 
     #[serde(default)]
-    pub redeem_period: Option<String>,
+    pub redeem_period: Option<u64>,
 
     #[serde(rename = "redeemingAmt", with = "string_or_float_opt")]
     #[serde(default)]
@@ -1451,7 +1451,7 @@ pub struct LockedProductInfo {
     pub redeem_to: Option<String>,
 
     #[serde(default)]
-    pub partial_amt_deliver_date: Option<String>,
+    pub partial_amt_deliver_date: Option<u64>,
 
     #[serde(default)]
     pub can_redeem_early: Option<bool>,
