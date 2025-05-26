@@ -1,7 +1,6 @@
-use error_chain::bail;
 use hex::encode as hex_encode;
 use hmac::{Hmac, Mac};
-use crate::errors::{BinanceContentError, ErrorKind, Result};
+use crate::errors::{BinanceContentError, Result, SdkError};
 use reqwest::StatusCode;
 use reqwest::blocking::Response;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue, USER_AGENT, CONTENT_TYPE};
@@ -170,23 +169,20 @@ impl Client {
                 let parsed: T = serde_json::from_str(&text)?;
                 Ok(parsed)
             }
-            StatusCode::INTERNAL_SERVER_ERROR => {
-                bail!("Internal Server Error");
-            }
-            StatusCode::SERVICE_UNAVAILABLE => {
-                bail!("Service Unavailable");
-            }
-            StatusCode::UNAUTHORIZED => {
-                bail!("Unauthorized");
-            }
+            StatusCode::INTERNAL_SERVER_ERROR => Err("Internal Server Error".to_string().into()),
+            StatusCode::SERVICE_UNAVAILABLE => Err("Service Unavailable".to_string().into()),
+            StatusCode::UNAUTHORIZED => Err("Unauthorized: Invalid API Key or Secret Key"
+                .to_string()
+                .into()),
             StatusCode::BAD_REQUEST => {
                 // Parse the text to error type instead of using response.json()
                 let error: BinanceContentError = serde_json::from_str(&text)?;
-                Err(ErrorKind::BinanceError(error).into())
+                Err(SdkError::BinanceError(error))
             }
-            s => {
-                bail!(format!("Received response: {:?}", s));
-            }
+            s => Err(SdkError::Other(format!(
+                "Unexpected status code: {}. Response: {}",
+                s, text
+            ))),
         }
     }
 }

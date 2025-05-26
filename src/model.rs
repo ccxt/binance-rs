@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{from_value, Value};
-use crate::errors::{Error, ErrorKind, Result};
+use crate::errors::{SdkError, Result};
 
 #[derive(Deserialize, Clone)]
 pub struct Empty {}
@@ -1024,12 +1024,15 @@ pub struct KlineSummary {
 fn get_value(row: &[Value], index: usize, name: &'static str) -> Result<Value> {
     Ok(row
         .get(index)
-        .ok_or_else(|| ErrorKind::KlineValueMissingError(index, name))?
+        .ok_or_else(|| SdkError::KlineValueMissingError {
+            name: name.to_string(),
+            index,
+        })?
         .clone())
 }
 
 impl TryFrom<&Vec<Value>> for KlineSummary {
-    type Error = Error;
+    type Error = SdkError;
 
     fn try_from(row: &Vec<Value>) -> Result<Self> {
         Ok(Self {
@@ -1342,7 +1345,8 @@ pub struct FlexibleProductInfo {
     pub total_amount: f64,
 
     #[serde(default)]
-    pub tier_annual_percentage_rate: HashMap<String, String>,
+    #[serde(with = "string_or_float_hashmap")]
+    pub tier_annual_percentage_rate: HashMap<String, f64>,
 
     #[serde(with = "string_or_float")]
     pub latest_annual_percentage_rate: f64,
@@ -1528,6 +1532,7 @@ pub(crate) mod string_or_float_opt {
     where
         D: Deserializer<'de>,
     {
+        #[allow(dead_code)]
         #[derive(Deserialize)]
         #[serde(untagged)]
         enum StringOrFloat {
@@ -1569,6 +1574,32 @@ pub(crate) mod string_or_bool {
             StringOrFloat::String(s) => s.parse().map_err(de::Error::custom),
             StringOrFloat::Bool(i) => Ok(i),
         }
+    }
+}
+
+pub(crate) mod string_or_float_hashmap {
+    use std::collections::HashMap;
+    use serde::{Serialize, Deserialize, Serializer, Deserializer};
+    use super::string_or_float;
+
+    #[derive(Serialize, Deserialize)]
+    struct Helper(#[serde(with = "string_or_float")] f64);
+
+    pub fn serialize<S>(map: &HashMap<String, f64>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let helper_map: HashMap<String, Helper> =
+            map.iter().map(|(k, v)| (k.clone(), Helper(*v))).collect();
+        helper_map.serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<HashMap<String, f64>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let map: HashMap<String, Helper> = HashMap::deserialize(deserializer)?;
+        Ok(map.into_iter().map(|(k, Helper(v))| (k, v)).collect())
     }
 }
 

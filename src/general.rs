@@ -1,8 +1,6 @@
-use error_chain::bail;
-
 use crate::model::{Empty, ExchangeInformation, ServerTime, Symbol};
 use crate::client::Client;
-use crate::errors::Result;
+use crate::errors::{Result, SdkError};
 use crate::api::API;
 use crate::api::Spot;
 
@@ -42,7 +40,7 @@ impl General {
                         return Ok(item);
                     }
                 }
-                bail!("Symbol not found")
+                Err(SdkError::Other("Symbol not found".into()))
             }
             Err(e) => Err(e),
         }

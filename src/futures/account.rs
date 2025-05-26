@@ -424,7 +424,7 @@ impl FuturesAccount {
     pub fn custom_batch_orders(
         &self, _order_count: u64, order_requests: Vec<CustomOrderRequest>,
     ) -> Result<Transaction> {
-        let request = String::from("");
+        let request = String::new();
         for order_request in order_requests {
             let order = OrderRequest {
                 symbol: order_request.symbol,

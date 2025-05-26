@@ -6,7 +6,6 @@ use crate::model::{
     MarkPriceEvent, MiniTickerEvent, OrderBook, TradeEvent, UserDataStreamExpiredEvent,
 };
 use crate::futures::model;
-use error_chain::bail;
 use url::Url;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -138,7 +137,10 @@ impl<'a> FuturesWebSockets<'a> {
                 self.socket = Some(answer);
                 Ok(())
             }
-            Err(e) => bail!(format!("Error during handshake {}", e)),
+            Err(e) => Err(crate::errors::SdkError::Other(format!(
+                "Error during handshake: {}",
+                e
+            ))),
         }
     }
 
@@ -147,7 +149,9 @@ impl<'a> FuturesWebSockets<'a> {
             socket.0.close(None)?;
             return Ok(());
         }
-        bail!("Not able to close the connection");
+        Err(crate::errors::SdkError::Other(
+            "Not able to close the connection".to_string(),
+        ))
     }
 
     pub fn test_handle_msg(&mut self, msg: &str) -> Result<()> {
@@ -194,21 +198,31 @@ impl<'a> FuturesWebSockets<'a> {
     pub fn event_loop(&mut self, running: &AtomicBool) -> Result<()> {
         while running.load(Ordering::Relaxed) {
             if let Some(ref mut socket) = self.socket {
-                let message = socket.0.read_message()?;
+                let message = socket.0.read()?;
                 match message {
                     Message::Text(msg) => {
                         if let Err(e) = self.handle_msg(&msg) {
-                            bail!(format!("Error on handling stream message: {}", e));
+                            return Err(crate::errors::SdkError::Other(format!(
+                                "Error on handling stream message: {}",
+                                e
+                            )));
                         }
                     }
                     Message::Ping(payload) => {
-                        socket.0.write_message(Message::Pong(payload)).unwrap();
+                        socket.0.send(Message::Pong(payload)).unwrap();
                     }
                     Message::Pong(_) | Message::Binary(_) | Message::Frame(_) => (),
-                    Message::Close(e) => bail!(format!("Disconnected {:?}", e)),
+                    Message::Close(e) => {
+                        return Err(crate::errors::SdkError::Other(format!(
+                            "Disconnected: {:?}",
+                            e
+                        )));
+                    }
                 }
             }
         }
-        bail!("running loop closed");
+        Err(crate::errors::SdkError::Other(
+            "Running loop closed".to_string(),
+        ))
     }
 }
