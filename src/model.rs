@@ -124,6 +124,9 @@ pub enum Filters {
         min_trailing_below_delta: Option<u16>,
         max_trailing_below_delta: Option<u16>,
     },
+    // Add this to catch unknown variants during deserialization
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
