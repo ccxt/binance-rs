@@ -127,6 +127,12 @@ pub enum Filters {
         min_trailing_below_delta: Option<u16>,
         max_trailing_below_delta: Option<u16>,
     },
+    #[serde(rename = "MAX_NUM_ORDER_LISTS")]
+    #[serde(rename_all = "camelCase")]
+    MaxNumOrderLists { max_num_order_lists: Option<u16> },
+    #[serde(rename = "MAX_NUM_ORDER_AMENDS")]
+    #[serde(rename_all = "camelCase")]
+    MaxNumOrderAmends { max_num_order_amends: Option<u16> },
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
