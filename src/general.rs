@@ -1,10 +1,11 @@
 use error_chain::bail;
-
+use crate::util::build_request;
 use crate::model::{Empty, ExchangeInformation, ServerTime, Symbol};
 use crate::client::Client;
 use crate::errors::Result;
 use crate::api::API;
 use crate::api::Spot;
+use std::collections::BTreeMap;
 
 #[derive(Clone)]
 pub struct General {
@@ -27,6 +28,20 @@ impl General {
     // - Current exchange trading rules and symbol information
     pub fn exchange_info(&self) -> Result<ExchangeInformation> {
         self.client.get(API::Spot(Spot::ExchangeInfo), None)
+    }
+
+
+
+    // Obtain exchange information with permissions
+    // - Current exchange trading rules and symbol information
+    pub fn exchange_info_permission<S>(&self, permission : S) -> Result<ExchangeInformation>
+    where
+        S: Into<String>, 
+    {
+        let mut parameters: BTreeMap<String, String> = BTreeMap::new();
+        parameters.insert("permissions".into(), permission.into());
+        let request = build_request(parameters);
+        self.client.get(API::Spot(Spot::ExchangeInfo), Some(request))
     }
 
     // Get Symbol information
