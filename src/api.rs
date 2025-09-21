@@ -54,6 +54,8 @@ pub enum Sapi {
     AssetDetail,
     DepositAddress,
     SpotFuturesTransfer,
+    TradeFee,
+    Withdraw,
 }
 
 pub enum Futures {
@@ -131,6 +133,8 @@ impl From<API> for String {
                 Sapi::AssetDetail => "/sapi/v1/asset/assetDetail",
                 Sapi::DepositAddress => "/sapi/v1/capital/deposit/address",
                 Sapi::SpotFuturesTransfer => "/sapi/v1/futures/transfer",
+                Sapi::TradeFee => "/sapi/v1/asset/tradeFee",
+                Sapi::Withdraw => "/sapi/v1/capital/withdraw/apply",
             },
             API::Futures(route) => match route {
                 Futures::Ping => "/fapi/v1/ping",
