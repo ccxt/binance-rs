@@ -27,6 +27,9 @@ pub enum FuturesMarket {
     USDM,
     COINM,
     Vanilla,
+    USDMTestnet,
+    COINMTestnet,
+    VanillaTestnet,
 }
 
 impl FuturesWebsocketAPI {
@@ -35,6 +38,9 @@ impl FuturesWebsocketAPI {
             FuturesMarket::USDM => "wss://fstream.binance.com",
             FuturesMarket::COINM => "wss://dstream.binance.com",
             FuturesMarket::Vanilla => "wss://vstream.binance.com",
+            FuturesMarket::USDMTestnet => "wss://fstream.binancefuture.com",
+            FuturesMarket::COINMTestnet => "wss://dstream.binancefuture.com",
+            FuturesMarket::VanillaTestnet => "wss://vstream.binancefuture.com",
         };
 
         match self {
