@@ -57,7 +57,7 @@ impl Display for PositionSide {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum OrderType {
     Limit,
     Market,
