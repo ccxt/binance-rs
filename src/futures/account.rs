@@ -40,6 +40,7 @@ impl From<ContractType> for String {
     }
 }
 
+#[derive(Debug, Clone)]
 pub enum PositionSide {
     Both,
     Long,
