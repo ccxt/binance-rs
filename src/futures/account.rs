@@ -102,6 +102,7 @@ pub enum TimeInForce {
     IOC,
     FOK,
     GTX,
+    GTD,
 }
 
 impl Display for TimeInForce {
@@ -111,6 +112,7 @@ impl Display for TimeInForce {
             Self::IOC => write!(f, "IOC"),
             Self::FOK => write!(f, "FOK"),
             Self::GTX => write!(f, "GTX"),
+            Self::GTD => write!(f, "GTD"),
         }
     }
 }
@@ -131,6 +133,7 @@ struct OrderRequest {
     pub working_type: Option<WorkingType>,
     pub price_protect: Option<f64>,
     pub new_client_order_id: Option<String>,
+    pub good_till_date: Option<u64>,
 }
 
 pub struct CustomOrderRequest {
@@ -149,6 +152,7 @@ pub struct CustomOrderRequest {
     pub working_type: Option<WorkingType>,
     pub price_protect: Option<f64>,
     pub new_client_order_id: Option<String>,
+    pub good_till_date: Option<u64>,
 }
 
 pub struct IncomeRequest {
@@ -229,6 +233,7 @@ impl FuturesAccount {
             working_type: None,
             price_protect: None,
             new_client_order_id: None,
+            good_till_date: None,
         };
         let order = self.build_order(buy, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -256,6 +261,7 @@ impl FuturesAccount {
             working_type: None,
             price_protect: None,
             new_client_order_id: None,
+            good_till_date: None,
         };
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -285,6 +291,7 @@ impl FuturesAccount {
             working_type: None,
             price_protect: None,
             new_client_order_id: None,
+            good_till_date: None,
         };
         let order = self.build_order(buy, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -314,6 +321,7 @@ impl FuturesAccount {
             working_type: None,
             price_protect: None,
             new_client_order_id: None,
+            good_till_date: None,
         };
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -371,6 +379,7 @@ impl FuturesAccount {
             working_type: None,
             price_protect: None,
             new_client_order_id: None,
+            good_till_date: None,
         };
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -400,6 +409,7 @@ impl FuturesAccount {
             working_type: None,
             price_protect: None,
             new_client_order_id: None,
+            good_till_date: None,
         };
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -432,6 +442,7 @@ impl FuturesAccount {
             working_type: order_request.working_type,
             price_protect: order_request.price_protect,
             new_client_order_id: order_request.new_client_order_id,
+            good_till_date: order_request.good_till_date,
         };
         let order = self.build_order(order, Some(request_params));
         let request = build_signed_request(order, self.recv_window)?;
@@ -462,6 +473,7 @@ impl FuturesAccount {
                 working_type: order_request.working_type,
                 price_protect: order_request.price_protect,
                 new_client_order_id: order_request.new_client_order_id,
+                good_till_date: order_request.good_till_date,
             };
             let _order = self.build_order(order, Some(request_params.clone()));
             // TODO : make a request string for batch orders api
@@ -585,6 +597,10 @@ impl FuturesAccount {
         } else {
             let uuid = uuid_futures();
             parameters.insert("newClientOrderId".into(), uuid);
+        }
+
+        if let Some(good_till_date) = order.good_till_date {
+            parameters.insert("goodTillDate".into(), good_till_date.to_string());
         }
 
         if let Some(params) = request_params {
