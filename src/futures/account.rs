@@ -171,6 +171,7 @@ pub struct CustomOrderRequest {
     /// order cancel time for timeInForce **GTD**, mandatory when [TimeInForce] set to **GTD** \
     /// order the timestamp only retains second-level precision, **ms part will be ignored** \
     /// The goodTillDate timestamp must be greater than the current time **plus 600 seconds** and smaller than **253402300799000**.
+    /// the timestamp should be in `UTC` timezone
     pub good_till_date: Option<u64>,
 }
 
