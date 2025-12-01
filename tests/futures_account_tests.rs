@@ -246,6 +246,7 @@ mod tests {
             working_type: None,
             price_protect: None,
             new_client_order_id: Some("myId".into()),
+            good_till_date: None,
         };
         let transaction: Transaction = account.custom_order(custom_order).unwrap();
 
