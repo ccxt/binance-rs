@@ -98,10 +98,15 @@ impl Display for WorkingType {
 
 #[allow(clippy::all)]
 pub enum TimeInForce {
+    /// Good Till Cancel
     GTC,
+    /// Immediate or Cancel
     IOC,
+    ///  Fill or Kill
     FOK,
+    /// Good Till Crossing
     GTX,
+    /// Good Till Date
     GTD,
 }
 
@@ -139,19 +144,33 @@ struct OrderRequest {
 pub struct CustomOrderRequest {
     pub symbol: String,
     pub side: OrderSide,
+    /// Default `BOTH` for One-way Mode ; `LONG` or `SHORT` for Hedge Mode. \
+    /// It must be sent in Hedge Mode.
     pub position_side: Option<PositionSide>,
     pub order_type: OrderType,
     pub time_in_force: Option<TimeInForce>,
+    /// Cannot be sent with `closePosition`=true(Close-All)
     pub qty: Option<f64>,
     pub reduce_only: Option<bool>,
     pub price: Option<f64>,
+    /// Used with `STOP`/`STOP_MARKET` or `TAKE_PROFIT`/`TAKE_PROFIT_MARKET` orders.
     pub stop_price: Option<f64>,
+    /// Close-All，used with `STOP_MARKET` or `TAKE_PROFIT_MARKET`.
     pub close_position: Option<bool>,
+    /// Used with `TRAILING_STOP_MARKET` orders, default as the latest price(supporting different `workingType`)
     pub activation_price: Option<f64>,
+    /// Used with `TRAILING_STOP_MARKET` orders, min `0.1`, max `10` where `1` for `1%`
     pub callback_rate: Option<f64>,
+    /// `stopPrice` triggered by: `MARK_PRICE`, `CONTRACT_PRICE`. Default `CONTRACT_PRICE`
     pub working_type: Option<WorkingType>,
     pub price_protect: Option<f64>,
+    /// A unique id among open orders. \
+    /// Automatically generated if not sent. \
+    /// Can only be string following the rule: `^[\.A-Z\:/a-z0-9_-]{1,32}$`
     pub new_client_order_id: Option<String>,
+    /// order cancel time for timeInForce **GTD**, mandatory when [TimeInForce] set to **GTD** \
+    /// order the timestamp only retains second-level precision, **ms part will be ignored** \
+    /// The goodTillDate timestamp must be greater than the current time **plus 600 seconds** and smaller than **253402300799000**.
     pub good_till_date: Option<u64>,
 }
 
