@@ -52,11 +52,7 @@ pub fn is_start_time_valid(start_time: &u64) -> bool {
         .unwrap()
         .as_secs();
 
-    if start_time > &current_time {
-        false
-    } else {
-        true
-    }
+    start_time <= &current_time
 }
 
 pub fn generate_uuid22() -> String {
