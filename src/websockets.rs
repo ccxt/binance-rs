@@ -5,6 +5,7 @@ use crate::model::{
     WindowTickerEvent, DepthOrderBookEvent, KlineEvent, OrderBook, OrderTradeEvent, TradeEvent,
 };
 use error_chain::bail;
+use log::warn;
 use url::Url;
 use serde::{Deserialize, Serialize};
 
@@ -102,7 +103,7 @@ impl<'a> WebSockets<'a> {
 
     fn connect_wss(&mut self, wss: &str) -> Result<()> {
         let url = Url::parse(wss)?;
-        match connect(url) {
+        match connect(url.as_str()) {
             Ok(answer) => {
                 self.socket = Some(answer);
                 self.set_read_timeout(Some(Duration::from_secs(1)))?;
@@ -195,11 +196,19 @@ impl<'a> WebSockets<'a> {
     fn set_read_timeout(&mut self, timeout: Option<Duration>) -> Result<()> {
         if let Some(ref mut socket) = self.socket {
             match socket.0.get_mut() {
-                MaybeTlsStream::Plain(stream) => stream.set_read_timeout(timeout)?,
-                MaybeTlsStream::NativeTls(stream) => stream.get_mut().set_read_timeout(timeout)?,
-                #[cfg(feature = "__rustls-tls")]
-                MaybeTlsStream::Rustls(stream) => stream.sock.set_read_timeout(timeout)?,
-                _ => {}
+                MaybeTlsStream::Plain(stream) => {
+                    if let Err(e) = stream.set_read_timeout(timeout) {
+                        warn!("failed to set spot websocket read timeout: {}", e);
+                        return Err(e.into());
+                    }
+                }
+                MaybeTlsStream::Rustls(stream) => {
+                    if let Err(e) = stream.sock.set_read_timeout(timeout) {
+                        warn!("failed to set spot websocket read timeout: {}", e);
+                        return Err(e.into());
+                    }
+                }
+                _ => warn!("spot websocket read timeout skipped: unsupported socket type"),
             }
         }
         Ok(())
