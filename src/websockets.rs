@@ -5,7 +5,6 @@ use crate::model::{
     WindowTickerEvent, DepthOrderBookEvent, KlineEvent, OrderBook, OrderTradeEvent, TradeEvent,
 };
 use error_chain::bail;
-use log::warn;
 use url::Url;
 use serde::{Deserialize, Serialize};
 
@@ -149,7 +148,7 @@ impl<'a> WebSockets<'a> {
                 };
                 (self.handler)(action)?;
             }
-            Err(err) => warn!("Unparsed spot websocket message: {} | raw={}", err, msg),
+            Err(err) => eprintln!("Unparsed spot websocket message: {} | raw={}", err, msg),
         }
         Ok(())
     }

@@ -7,7 +7,6 @@ use crate::model::{
 };
 use crate::futures::model;
 use error_chain::bail;
-use log::warn;
 use url::Url;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -196,7 +195,7 @@ impl<'a> FuturesWebSockets<'a> {
                 };
                 (self.handler)(action)?;
             }
-            Err(err) => warn!("Unparsed futures websocket message: {} | raw={}", err, msg),
+            Err(err) => eprintln!("Unparsed futures websocket message: {} | raw={}", err, msg),
         }
         Ok(())
     }
