@@ -11,7 +11,9 @@ use url::Url;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::net::TcpStream;
-use tungstenite::{connect, Message};
+use std::time::Duration;
+use std::io::ErrorKind;
+use tungstenite::{connect, Message, Error as WsError};
 use tungstenite::protocol::WebSocket;
 use tungstenite::stream::MaybeTlsStream;
 use tungstenite::handshake::client::Response;
@@ -142,6 +144,7 @@ impl<'a> FuturesWebSockets<'a> {
         match connect(url) {
             Ok(answer) => {
                 self.socket = Some(answer);
+                self.set_read_timeout(Some(Duration::from_secs(1)))?;
                 Ok(())
             }
             Err(e) => bail!(format!("Error during handshake {}", e)),
@@ -203,7 +206,11 @@ impl<'a> FuturesWebSockets<'a> {
     pub fn event_loop(&mut self, running: &AtomicBool) -> Result<()> {
         while running.load(Ordering::Relaxed) {
             if let Some(ref mut socket) = self.socket {
-                let message = socket.0.read_message()?;
+                let message = match socket.0.read_message() {
+                    Ok(msg) => msg,
+                    Err(e) if Self::is_non_fatal_read_error(&e) => continue,
+                    Err(e) => return Err(e.into()),
+                };
                 match message {
                     Message::Text(msg) => {
                         if let Err(e) = self.handle_msg(&msg) {
@@ -219,5 +226,29 @@ impl<'a> FuturesWebSockets<'a> {
             }
         }
         bail!("running loop closed");
+    }
+
+    fn is_non_fatal_read_error(error: &WsError) -> bool {
+        if let WsError::Io(io_error) = error {
+            matches!(
+                io_error.kind(),
+                ErrorKind::WouldBlock | ErrorKind::TimedOut | ErrorKind::Interrupted
+            )
+        } else {
+            false
+        }
+    }
+
+    fn set_read_timeout(&mut self, timeout: Option<Duration>) -> Result<()> {
+        if let Some(ref mut socket) = self.socket {
+            match socket.0.get_mut() {
+                MaybeTlsStream::Plain(stream) => stream.set_read_timeout(timeout)?,
+                MaybeTlsStream::NativeTls(stream) => stream.get_mut().set_read_timeout(timeout)?,
+                #[cfg(feature = "__rustls-tls")]
+                MaybeTlsStream::Rustls(stream) => stream.sock.set_read_timeout(timeout)?,
+                _ => {}
+            }
+        }
+        Ok(())
     }
 }
