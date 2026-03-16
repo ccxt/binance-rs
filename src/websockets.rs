@@ -5,6 +5,7 @@ use crate::model::{
     WindowTickerEvent, DepthOrderBookEvent, KlineEvent, OrderBook, OrderTradeEvent, TradeEvent,
 };
 use error_chain::bail;
+use log::warn;
 use url::Url;
 use serde::{Deserialize, Serialize};
 
@@ -129,23 +130,26 @@ impl<'a> WebSockets<'a> {
             return Ok(());
         }
 
-        if let Ok(events) = serde_json::from_value::<Events>(value) {
-            let action = match events {
-                Events::DayTickerEventAll(v) => WebsocketEvent::DayTickerAll(v),
-                Events::WindowTickerEventAll(v) => WebsocketEvent::WindowTickerAll(v),
-                Events::BookTickerEvent(v) => WebsocketEvent::BookTicker(v),
-                Events::BalanceUpdateEvent(v) => WebsocketEvent::BalanceUpdate(v),
-                Events::AccountUpdateEvent(v) => WebsocketEvent::AccountUpdate(v),
-                Events::OrderTradeEvent(v) => WebsocketEvent::OrderTrade(v),
-                Events::AggrTradesEvent(v) => WebsocketEvent::AggrTrades(v),
-                Events::TradeEvent(v) => WebsocketEvent::Trade(v),
-                Events::DayTickerEvent(v) => WebsocketEvent::DayTicker(v),
-                Events::WindowTickerEvent(v) => WebsocketEvent::WindowTicker(v),
-                Events::KlineEvent(v) => WebsocketEvent::Kline(v),
-                Events::OrderBook(v) => WebsocketEvent::OrderBook(v),
-                Events::DepthOrderBookEvent(v) => WebsocketEvent::DepthOrderBook(v),
-            };
-            (self.handler)(action)?;
+        match serde_json::from_value::<Events>(value) {
+            Ok(events) => {
+                let action = match events {
+                    Events::DayTickerEventAll(v) => WebsocketEvent::DayTickerAll(v),
+                    Events::WindowTickerEventAll(v) => WebsocketEvent::WindowTickerAll(v),
+                    Events::BookTickerEvent(v) => WebsocketEvent::BookTicker(v),
+                    Events::BalanceUpdateEvent(v) => WebsocketEvent::BalanceUpdate(v),
+                    Events::AccountUpdateEvent(v) => WebsocketEvent::AccountUpdate(v),
+                    Events::OrderTradeEvent(v) => WebsocketEvent::OrderTrade(v),
+                    Events::AggrTradesEvent(v) => WebsocketEvent::AggrTrades(v),
+                    Events::TradeEvent(v) => WebsocketEvent::Trade(v),
+                    Events::DayTickerEvent(v) => WebsocketEvent::DayTicker(v),
+                    Events::WindowTickerEvent(v) => WebsocketEvent::WindowTicker(v),
+                    Events::KlineEvent(v) => WebsocketEvent::Kline(v),
+                    Events::OrderBook(v) => WebsocketEvent::OrderBook(v),
+                    Events::DepthOrderBookEvent(v) => WebsocketEvent::DepthOrderBook(v),
+                };
+                (self.handler)(action)?;
+            }
+            Err(err) => warn!("Unparsed spot websocket message: {} | raw={}", err, msg),
         }
         Ok(())
     }

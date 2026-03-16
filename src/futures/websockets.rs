@@ -7,6 +7,7 @@ use crate::model::{
 };
 use crate::futures::model;
 use error_chain::bail;
+use log::warn;
 use url::Url;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -168,31 +169,34 @@ impl<'a> FuturesWebSockets<'a> {
             return Ok(());
         }
 
-        if let Ok(events) = serde_json::from_value::<FuturesEvents>(value) {
-            let action = match events {
-                FuturesEvents::Vec(v) => FuturesWebsocketEvent::DayTickerAll(v),
-                FuturesEvents::DayTickerEvent(v) => FuturesWebsocketEvent::DayTicker(v),
-                FuturesEvents::BookTickerEvent(v) => FuturesWebsocketEvent::BookTicker(v),
-                FuturesEvents::MiniTickerEvent(v) => FuturesWebsocketEvent::MiniTicker(v),
-                FuturesEvents::VecMiniTickerEvent(v) => FuturesWebsocketEvent::MiniTickerAll(v),
-                FuturesEvents::AccountUpdateEvent(v) => FuturesWebsocketEvent::AccountUpdate(v),
-                FuturesEvents::OrderTradeEvent(v) => FuturesWebsocketEvent::OrderTrade(v),
-                FuturesEvents::IndexPriceEvent(v) => FuturesWebsocketEvent::IndexPrice(v),
-                FuturesEvents::MarkPriceEvent(v) => FuturesWebsocketEvent::MarkPrice(v),
-                FuturesEvents::VecMarkPriceEvent(v) => FuturesWebsocketEvent::MarkPriceAll(v),
-                FuturesEvents::TradeEvent(v) => FuturesWebsocketEvent::Trade(v),
-                FuturesEvents::ContinuousKlineEvent(v) => FuturesWebsocketEvent::ContinuousKline(v),
-                FuturesEvents::IndexKlineEvent(v) => FuturesWebsocketEvent::IndexKline(v),
-                FuturesEvents::LiquidationEvent(v) => FuturesWebsocketEvent::Liquidation(v),
-                FuturesEvents::KlineEvent(v) => FuturesWebsocketEvent::Kline(v),
-                FuturesEvents::OrderBook(v) => FuturesWebsocketEvent::OrderBook(v),
-                FuturesEvents::DepthOrderBookEvent(v) => FuturesWebsocketEvent::DepthOrderBook(v),
-                FuturesEvents::AggrTradesEvent(v) => FuturesWebsocketEvent::AggrTrades(v),
-                FuturesEvents::UserDataStreamExpiredEvent(v) => {
-                    FuturesWebsocketEvent::UserDataStreamExpiredEvent(v)
-                }
-            };
-            (self.handler)(action)?;
+        match serde_json::from_value::<FuturesEvents>(value) {
+            Ok(events) => {
+                let action = match events {
+                    FuturesEvents::Vec(v) => FuturesWebsocketEvent::DayTickerAll(v),
+                    FuturesEvents::DayTickerEvent(v) => FuturesWebsocketEvent::DayTicker(v),
+                    FuturesEvents::BookTickerEvent(v) => FuturesWebsocketEvent::BookTicker(v),
+                    FuturesEvents::MiniTickerEvent(v) => FuturesWebsocketEvent::MiniTicker(v),
+                    FuturesEvents::VecMiniTickerEvent(v) => FuturesWebsocketEvent::MiniTickerAll(v),
+                    FuturesEvents::AccountUpdateEvent(v) => FuturesWebsocketEvent::AccountUpdate(v),
+                    FuturesEvents::OrderTradeEvent(v) => FuturesWebsocketEvent::OrderTrade(v),
+                    FuturesEvents::IndexPriceEvent(v) => FuturesWebsocketEvent::IndexPrice(v),
+                    FuturesEvents::MarkPriceEvent(v) => FuturesWebsocketEvent::MarkPrice(v),
+                    FuturesEvents::VecMarkPriceEvent(v) => FuturesWebsocketEvent::MarkPriceAll(v),
+                    FuturesEvents::TradeEvent(v) => FuturesWebsocketEvent::Trade(v),
+                    FuturesEvents::ContinuousKlineEvent(v) => FuturesWebsocketEvent::ContinuousKline(v),
+                    FuturesEvents::IndexKlineEvent(v) => FuturesWebsocketEvent::IndexKline(v),
+                    FuturesEvents::LiquidationEvent(v) => FuturesWebsocketEvent::Liquidation(v),
+                    FuturesEvents::KlineEvent(v) => FuturesWebsocketEvent::Kline(v),
+                    FuturesEvents::OrderBook(v) => FuturesWebsocketEvent::OrderBook(v),
+                    FuturesEvents::DepthOrderBookEvent(v) => FuturesWebsocketEvent::DepthOrderBook(v),
+                    FuturesEvents::AggrTradesEvent(v) => FuturesWebsocketEvent::AggrTrades(v),
+                    FuturesEvents::UserDataStreamExpiredEvent(v) => {
+                        FuturesWebsocketEvent::UserDataStreamExpiredEvent(v)
+                    }
+                };
+                (self.handler)(action)?;
+            }
+            Err(err) => warn!("Unparsed futures websocket message: {} | raw={}", err, msg),
         }
         Ok(())
     }
