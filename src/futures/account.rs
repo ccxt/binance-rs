@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::fmt::Display;
 
+
 use crate::util::{build_signed_request, uuid_futures};
 use crate::errors::Result;
 use crate::client::Client;
@@ -145,6 +146,7 @@ struct OrderRequest {
     pub new_client_order_id: Option<String>,
     pub good_till_date: Option<u64>,
     pub algo_type: Option<AlgoType>,
+    pub client_algo_id: Option<String>,
 }
 
 pub struct CustomOrderRequest {
@@ -265,6 +267,7 @@ impl FuturesAccount {
             new_client_order_id: None,
             good_till_date: None,
             algo_type: None,
+            client_algo_id: None,
         };
         let order = self.build_order(buy, None, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -294,6 +297,7 @@ impl FuturesAccount {
             new_client_order_id: None,
             good_till_date: None,
             algo_type: None,
+            client_algo_id: None,
         };
         let order = self.build_order(sell, None, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -325,6 +329,7 @@ impl FuturesAccount {
             new_client_order_id: None,
             good_till_date: None,
             algo_type: None,
+            client_algo_id: None,
         };
         let order = self.build_order(buy, None, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -356,6 +361,7 @@ impl FuturesAccount {
             new_client_order_id: None,
             good_till_date: None,
             algo_type: None,
+            client_algo_id: None,
         };
         let order = self.build_order(sell, None, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -415,6 +421,7 @@ impl FuturesAccount {
             new_client_order_id: None,
             good_till_date: None,
             algo_type: Some(AlgoType::Conditional),
+            client_algo_id: None,
         };
         let order = self.build_order(sell, None, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -446,6 +453,7 @@ impl FuturesAccount {
             new_client_order_id: None,
             good_till_date: None,
             algo_type: Some(AlgoType::Conditional),
+            client_algo_id: None,
         };
         let order = self.build_order(sell, None, Some(API::Futures(Futures::AlgoOrder)));
         let request = build_signed_request(order, self.recv_window)?;
@@ -480,6 +488,7 @@ impl FuturesAccount {
             new_client_order_id: order_request.new_client_order_id,
             good_till_date: order_request.good_till_date,
             algo_type: Some(order_request.algo_type),
+            client_algo_id: order_request.client_algo_id,
         };
         let order = self.build_order(
             order,
@@ -516,6 +525,7 @@ impl FuturesAccount {
                 new_client_order_id: order_request.new_client_order_id,
                 good_till_date: order_request.good_till_date,
                 algo_type: Some(order_request.algo_type),
+                client_algo_id: order_request.client_algo_id,
             };
             let _order = self.build_order(
                 order,
@@ -602,6 +612,15 @@ impl FuturesAccount {
 
         if let Some(API::Futures(Futures::AlgoOrder)) = api_type {
             parameters.insert("algoType".into(), "Conditional".into());
+            parameters.insert("clientAlgoId".into(), "Conditional".into());
+            
+            if let Some(client_algo_id) = order.client_algo_id {
+                parameters.insert("clientAlgoId".into(), client_algo_id.to_string());
+            }
+
+            if let Some(stop_price) = order.stop_price {
+                parameters.insert("triggerPrice".into(), stop_price.to_string());
+            }
         }
 
         if let Some(position_side) = order.position_side {
