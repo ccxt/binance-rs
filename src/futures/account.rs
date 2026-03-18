@@ -266,7 +266,7 @@ impl FuturesAccount {
             good_till_date: None,
             algo_type: None,
         };
-        let order = self.build_order(buy, None);
+        let order = self.build_order(buy, None, None);
         let request = build_signed_request(order, self.recv_window)?;
         self.client
             .post_signed(API::Futures(Futures::Order), request)
@@ -295,7 +295,7 @@ impl FuturesAccount {
             good_till_date: None,
             algo_type: None,
         };
-        let order = self.build_order(sell, None);
+        let order = self.build_order(sell, None, None);
         let request = build_signed_request(order, self.recv_window)?;
         self.client
             .post_signed(API::Futures(Futures::Order), request)
@@ -326,7 +326,7 @@ impl FuturesAccount {
             good_till_date: None,
             algo_type: None,
         };
-        let order = self.build_order(buy, None);
+        let order = self.build_order(buy, None, None);
         let request = build_signed_request(order, self.recv_window)?;
         self.client
             .post_signed(API::Futures(Futures::Order), request)
@@ -357,7 +357,7 @@ impl FuturesAccount {
             good_till_date: None,
             algo_type: None,
         };
-        let order = self.build_order(sell, None);
+        let order = self.build_order(sell, None, None);
         let request = build_signed_request(order, self.recv_window)?;
         self.client
             .post_signed(API::Futures(Futures::Order), request)
@@ -414,9 +414,9 @@ impl FuturesAccount {
             price_protect: None,
             new_client_order_id: None,
             good_till_date: None,
-            algo_type: None,
+            algo_type: Some(AlgoType::Conditional),
         };
-        let order = self.build_order(sell, None);
+        let order = self.build_order(sell, None, None);
         let request = build_signed_request(order, self.recv_window)?;
         self.client
             .post_signed(API::Futures(Futures::AlgoOrder), request)
@@ -445,9 +445,9 @@ impl FuturesAccount {
             price_protect: None,
             new_client_order_id: None,
             good_till_date: None,
-            algo_type: None,
+            algo_type: Some(AlgoType::Conditional),
         };
-        let order = self.build_order(sell, None);
+        let order = self.build_order(sell, None, Some(API::Futures(Futures::AlgoOrder)));
         let request = build_signed_request(order, self.recv_window)?;
         self.client
             .post_signed(API::Futures(Futures::AlgoOrder), request)
@@ -481,7 +481,11 @@ impl FuturesAccount {
             good_till_date: order_request.good_till_date,
             algo_type: Some(order_request.algo_type),
         };
-        let order = self.build_order(order, Some(request_params));
+        let order = self.build_order(
+            order,
+            Some(request_params),
+            Some(API::Futures(Futures::AlgoOrder)),
+        );
         let request = build_signed_request(order, self.recv_window)?;
         self.client
             .post_signed(API::Futures(Futures::AlgoOrder), request)
@@ -513,7 +517,11 @@ impl FuturesAccount {
                 good_till_date: order_request.good_till_date,
                 algo_type: Some(order_request.algo_type),
             };
-            let _order = self.build_order(order, Some(request_params.clone()));
+            let _order = self.build_order(
+                order,
+                Some(request_params.clone()),
+                Some(API::Futures(Futures::AlgoOrder)),
+            );
             // TODO : make a request string for batch orders api
             // let request = build_signed_request(order, self.recv_window)?;
         }
@@ -585,11 +593,16 @@ impl FuturesAccount {
     }
     fn build_order(
         &self, order: OrderRequest, request_params: Option<BTreeMap<String, String>>,
+        api_type: Option<API>,
     ) -> BTreeMap<String, String> {
         let mut parameters = BTreeMap::new();
         parameters.insert("symbol".into(), order.symbol);
         parameters.insert("side".into(), order.side.to_string());
         parameters.insert("type".into(), order.order_type.to_string());
+
+        if let Some(API::Futures(Futures::AlgoOrder)) = api_type {
+            parameters.insert("algoType".into(), "Conditional".into());
+        }
 
         if let Some(position_side) = order.position_side {
             parameters.insert("positionSide".into(), position_side.to_string());
