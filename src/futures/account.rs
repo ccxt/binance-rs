@@ -377,6 +377,7 @@ impl FuturesAccount {
             .delete_signed(API::Futures(Futures::Order), Some(request))
     }
 
+
     // Place a STOP_MARKET close - BUY
     pub fn stop_market_close_buy<S, F>(&self, symbol: S, stop_price: F) -> Result<Transaction>
     where
@@ -404,7 +405,7 @@ impl FuturesAccount {
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
         self.client
-            .post_signed(API::Futures(Futures::Order), request)
+            .post_signed(API::Futures(Futures::AlgoOrder), request)
     }
 
     // Place a STOP_MARKET close - SELL
@@ -434,7 +435,7 @@ impl FuturesAccount {
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
         self.client
-            .post_signed(API::Futures(Futures::Order), request)
+            .post_signed(API::Futures(Futures::AlgoOrder), request)
     }
 
     // Custom order for for professional traders
@@ -467,7 +468,7 @@ impl FuturesAccount {
         let order = self.build_order(order, Some(request_params));
         let request = build_signed_request(order, self.recv_window)?;
         self.client
-            .post_signed(API::Futures(Futures::Order), request)
+            .post_signed(API::Futures(Futures::AlgoOrder), request)
     }
 
     // Custom order for for professional traders
@@ -500,7 +501,7 @@ impl FuturesAccount {
             // let request = build_signed_request(order, self.recv_window)?;
         }
         self.client
-            .post_signed(API::Futures(Futures::Order), request)
+            .post_signed(API::Futures(Futures::AlgoOrder), request)
     }
 
     // Custom order for for professional traders
