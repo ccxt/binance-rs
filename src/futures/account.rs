@@ -47,6 +47,11 @@ pub enum PositionSide {
     Short,
 }
 
+#[derive(Debug, Clone)]
+pub enum AlgoType {
+    Conditional,
+}
+
 impl Display for PositionSide {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -139,9 +144,14 @@ struct OrderRequest {
     pub price_protect: Option<f64>,
     pub new_client_order_id: Option<String>,
     pub good_till_date: Option<u64>,
+    pub algo_type: Option<AlgoType>,
 }
 
 pub struct CustomOrderRequest {
+    // algoOrder params
+    pub algo_type: AlgoType,
+    pub client_algo_id: Option<String>,
+    //
     pub symbol: String,
     pub side: OrderSide,
     /// Default `BOTH` for One-way Mode ; `LONG` or `SHORT` for Hedge Mode. \
@@ -254,6 +264,7 @@ impl FuturesAccount {
             price_protect: None,
             new_client_order_id: None,
             good_till_date: None,
+            algo_type: None,
         };
         let order = self.build_order(buy, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -282,6 +293,7 @@ impl FuturesAccount {
             price_protect: None,
             new_client_order_id: None,
             good_till_date: None,
+            algo_type: None,
         };
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -312,6 +324,7 @@ impl FuturesAccount {
             price_protect: None,
             new_client_order_id: None,
             good_till_date: None,
+            algo_type: None,
         };
         let order = self.build_order(buy, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -342,6 +355,7 @@ impl FuturesAccount {
             price_protect: None,
             new_client_order_id: None,
             good_till_date: None,
+            algo_type: None,
         };
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -377,7 +391,6 @@ impl FuturesAccount {
             .delete_signed(API::Futures(Futures::Order), Some(request))
     }
 
-
     // Place a STOP_MARKET close - BUY
     pub fn stop_market_close_buy<S, F>(&self, symbol: S, stop_price: F) -> Result<Transaction>
     where
@@ -401,6 +414,7 @@ impl FuturesAccount {
             price_protect: None,
             new_client_order_id: None,
             good_till_date: None,
+            algo_type: None,
         };
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -431,6 +445,7 @@ impl FuturesAccount {
             price_protect: None,
             new_client_order_id: None,
             good_till_date: None,
+            algo_type: None,
         };
         let order = self.build_order(sell, None);
         let request = build_signed_request(order, self.recv_window)?;
@@ -464,6 +479,7 @@ impl FuturesAccount {
             price_protect: order_request.price_protect,
             new_client_order_id: order_request.new_client_order_id,
             good_till_date: order_request.good_till_date,
+            algo_type: Some(order_request.algo_type),
         };
         let order = self.build_order(order, Some(request_params));
         let request = build_signed_request(order, self.recv_window)?;
@@ -495,6 +511,7 @@ impl FuturesAccount {
                 price_protect: order_request.price_protect,
                 new_client_order_id: order_request.new_client_order_id,
                 good_till_date: order_request.good_till_date,
+                algo_type: Some(order_request.algo_type),
             };
             let _order = self.build_order(order, Some(request_params.clone()));
             // TODO : make a request string for batch orders api
