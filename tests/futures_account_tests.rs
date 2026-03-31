@@ -231,6 +231,8 @@ mod tests {
         let account: FuturesAccount = Binance::new_with_config(None, None, &config);
         let _ = env_logger::try_init();
         let custom_order = CustomOrderRequest {
+            algo_type: AlgoType::Conditional,
+            client_algo_id: Some("myAlgoId".into()),
             symbol: "SRMUSDT".into(),
             side: OrderSide::Sell,
             position_side: None,
@@ -247,6 +249,7 @@ mod tests {
             price_protect: None,
             new_client_order_id: Some("myId".into()),
             good_till_date: None,
+            
         };
         let transaction: Transaction = account.custom_order(custom_order).unwrap();
 
