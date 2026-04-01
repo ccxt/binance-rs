@@ -55,6 +55,11 @@ pub enum Filters {
         max_price: String,
         tick_size: String,
     },
+    #[serde(rename = "POSITION_RISK_CONTROL")]
+    #[serde(rename_all = "camelCase")]
+    PositionRiskControl {
+    },
+    
     #[serde(rename = "PERCENT_PRICE")]
     #[serde(rename_all = "camelCase")]
     PercentPrice {
@@ -146,6 +151,7 @@ pub struct AccountInformation {
     pub can_withdraw: bool,
     pub can_deposit: bool,
     pub balances: Vec<Balance>,
+    pub permissions: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
