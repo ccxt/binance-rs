@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::fmt::Display;
 
-
 use crate::util::{build_signed_request, uuid_futures};
 use crate::errors::Result;
 use crate::client::Client;
@@ -248,6 +247,7 @@ impl FuturesAccount {
     pub fn limit_buy(
         &self, symbol: impl Into<String>, qty: impl Into<f64>, price: f64,
         time_in_force: TimeInForce,
+        reduce_only : Option<bool>,
     ) -> Result<Transaction> {
         let buy = OrderRequest {
             symbol: symbol.into(),
@@ -256,7 +256,7 @@ impl FuturesAccount {
             order_type: OrderType::Limit,
             time_in_force: Some(time_in_force),
             qty: Some(qty.into()),
-            reduce_only: None,
+            reduce_only: reduce_only,
             price: Some(price),
             stop_price: None,
             close_position: None,
@@ -278,6 +278,7 @@ impl FuturesAccount {
     pub fn limit_sell(
         &self, symbol: impl Into<String>, qty: impl Into<f64>, price: f64,
         time_in_force: TimeInForce,
+        reduce_only : Option<bool>
     ) -> Result<Transaction> {
         let sell = OrderRequest {
             symbol: symbol.into(),
@@ -286,7 +287,7 @@ impl FuturesAccount {
             order_type: OrderType::Limit,
             time_in_force: Some(time_in_force),
             qty: Some(qty.into()),
-            reduce_only: None,
+            reduce_only: reduce_only,
             price: Some(price),
             stop_price: None,
             close_position: None,
@@ -613,7 +614,7 @@ impl FuturesAccount {
         if let Some(API::Futures(Futures::AlgoOrder)) = api_type {
             parameters.insert("algoType".into(), "Conditional".into());
             parameters.insert("clientAlgoId".into(), "Conditional".into());
-            
+
             if let Some(client_algo_id) = order.client_algo_id {
                 parameters.insert("clientAlgoId".into(), client_algo_id.to_string());
             }
