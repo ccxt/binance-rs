@@ -247,7 +247,7 @@ impl FuturesAccount {
     pub fn limit_buy(
         &self, symbol: impl Into<String>, qty: impl Into<f64>, price: f64,
         time_in_force: TimeInForce,
-        reduce_only : Option<bool>,
+        reduce_only: Option<bool>,
     ) -> Result<Transaction> {
         let buy = OrderRequest {
             symbol: symbol.into(),
