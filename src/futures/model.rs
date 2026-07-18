@@ -212,7 +212,7 @@ pub struct Order {
     pub client_order_id: String,
     #[serde(with = "string_or_float", default = "default_stop_price")]
     pub cum_qty: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub cum_quote: f64,
     #[serde(with = "string_or_float")]
     pub executed_qty: f64,
@@ -248,9 +248,9 @@ pub struct Order {
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
     pub client_order_id: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub cum_qty: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub cum_quote: f64,
     #[serde(with = "string_or_float")]
     pub executed_qty: f64,
@@ -286,9 +286,9 @@ pub struct Transaction {
 #[serde(rename_all = "camelCase")]
 pub struct CanceledOrder {
     pub client_order_id: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub cum_qty: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub cum_quote: f64,
     #[serde(with = "string_or_float")]
     pub executed_qty: f64,
