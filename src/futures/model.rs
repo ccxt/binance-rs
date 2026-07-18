@@ -214,14 +214,14 @@ pub struct Order {
     pub cum_qty: f64,
     #[serde(with = "string_or_float", default = "default_stop_price")]
     pub cum_quote: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub executed_qty: f64,
     pub order_id: u64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub avg_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub orig_qty: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub price: f64,
     pub side: String,
     pub reduce_only: bool,
@@ -252,18 +252,18 @@ pub struct Transaction {
     pub cum_qty: f64,
     #[serde(with = "string_or_float", default = "default_stop_price")]
     pub cum_quote: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub executed_qty: f64,
     pub order_id: u64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub avg_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub orig_qty: f64,
     pub reduce_only: bool,
     pub side: String,
     pub position_side: String,
     pub status: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub stop_price: f64,
     pub close_position: bool,
     pub symbol: String,
@@ -290,19 +290,19 @@ pub struct CanceledOrder {
     pub cum_qty: f64,
     #[serde(with = "string_or_float", default = "default_stop_price")]
     pub cum_quote: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub executed_qty: f64,
     pub order_id: u64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub orig_qty: f64,
     pub orig_type: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub price: f64,
     pub reduce_only: bool,
     pub side: String,
     pub position_side: String,
     pub status: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float", default = "default_stop_price")]
     pub stop_price: f64,
     pub close_position: bool,
     pub symbol: String,
