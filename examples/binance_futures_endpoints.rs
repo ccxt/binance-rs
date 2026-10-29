@@ -91,10 +91,18 @@ fn market_data() {
         Err(e) => println!("Error: {}", e),
     }
 
-    match market.get_all_liquidation_orders() {
-        Ok(LiquidationOrders::AllLiquidationOrders(answer)) => {
-            println!("First liquidation order: {:?}", answer[0]);
-        }
+    match market.get_funding_rate_history(Some("BTCUSDT".to_string()), None, None, 2) {
+        Ok(answer) => println!("Last funding rates: {:?}", answer),
+        Err(e) => println!("Error: {}", e),
+    }
+
+    match market.get_mark_price("BTCUSDT") {
+        Ok(answer) => println!("Mark price: {:?}", answer),
+        Err(e) => println!("Error: {}", e),
+    }
+
+    match market.top_long_short_account_ratio("BTCUSDT", "1h", 1, None, None) {
+        Ok(answer) => println!("Top trader long/short ratio: {:?}", answer),
         Err(e) => println!("Error: {}", e),
     }
 

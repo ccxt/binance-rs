@@ -6,7 +6,7 @@ use binance::model::*;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mockito::Server;
+    use mockito::{Server, Matcher};
     use float_cmp::*;
 
     #[test]
@@ -161,5 +161,93 @@ mod tests {
                 _ => panic!(),
             }
         }
+    }
+
+    #[test]
+    fn exchange_info_2026_fields_and_unknown_filters() {
+        let mut server = Server::new();
+        let mock = server
+            .mock("GET", "/api/v3/exchangeInfo")
+            .match_query(Matcher::Regex(
+                "showPermissionSets=false&symbol=ETHBTC".into(),
+            ))
+            .with_body_from_file("tests/mocks/general/exchange_info_2026.json")
+            .create();
+
+        let config = Config::default().set_rest_api_endpoint(server.url());
+        let general: General = Binance::new_with_config(None, None, &config);
+        let info = general
+            .exchange_info_with_params(Some(&["ETHBTC"]), None, false)
+            .unwrap();
+        mock.assert();
+
+        assert_eq!(info.exchange_filters.len(), 2);
+        assert!(matches!(
+            info.exchange_filters[1],
+            Filters::ExchangeMaxNumOrderLists {
+                max_num_order_lists: Some(20)
+            }
+        ));
+        let sors = info.sors.unwrap();
+        assert_eq!(sors[0].base_asset, "BTC");
+
+        let symbol = &info.symbols[0];
+        assert_eq!(symbol.oto_allowed, Some(true));
+        assert_eq!(symbol.opo_allowed, Some(true));
+        assert_eq!(symbol.amend_allowed, Some(false));
+        assert_eq!(symbol.peg_instructions_allowed, Some(true));
+        assert_eq!(symbol.permission_sets, vec![vec!["SPOT", "MARGIN"]]);
+        assert_eq!(
+            symbol.default_self_trade_prevention_mode.as_deref(),
+            Some("NONE")
+        );
+        assert!(
+            symbol
+                .allowed_self_trade_prevention_modes
+                .contains(&"TRANSFER".to_string())
+        );
+        assert_eq!(symbol.filters.len(), 4);
+        assert!(matches!(
+            symbol.filters[1],
+            Filters::MaxNumOrderLists {
+                max_num_order_lists: Some(20)
+            }
+        ));
+        assert!(matches!(
+            symbol.filters[2],
+            Filters::MaxNumOrderAmends {
+                max_num_order_amends: Some(10)
+            }
+        ));
+        assert!(matches!(symbol.filters[3], Filters::Unknown));
+    }
+
+    #[test]
+    fn exchange_info_with_symbols_and_status() {
+        let mut server = Server::new();
+        let mock = server
+            .mock("GET", "/api/v3/exchangeInfo")
+            .match_query(Matcher::AllOf(vec![Matcher::UrlEncoded(
+                "symbols".into(),
+                r#"["ETHBTC","BNBBTC"]"#.into(),
+            )]))
+            .with_body_from_file("tests/mocks/general/exchange_info.json")
+            .create();
+        let mock_status = server
+            .mock("GET", "/api/v3/exchangeInfo")
+            .match_query(Matcher::UrlEncoded("symbolStatus".into(), "TRADING".into()))
+            .with_body_from_file("tests/mocks/general/exchange_info.json")
+            .create();
+
+        let config = Config::default().set_rest_api_endpoint(server.url());
+        let general: General = Binance::new_with_config(None, None, &config);
+        general
+            .exchange_info_with_params(Some(&["ETHBTC", "BNBBTC"]), None, None)
+            .unwrap();
+        general
+            .exchange_info_with_params::<&str, _, _>(None, Some("TRADING".to_string()), None)
+            .unwrap();
+        mock.assert();
+        mock_status.assert();
     }
 }

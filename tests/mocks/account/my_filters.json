@@ -1,0 +1,6 @@
+{
+  "exchangeFilters": [ { "filterType": "EXCHANGE_MAX_NUM_ORDERS", "maxNumOrders": 1000 } ],
+  "symbolFilters": [ { "filterType": "PRICE_FILTER", "minPrice": "0.00000100", "maxPrice": "100000.00000000", "tickSize": "0.00000100" } ],
+  "assetFilters": [ { "filterType": "MAX_ASSET", "limit": "100.00000000", "asset": "BNB" } ],
+  "rateLimits": [ { "rateLimitType": "REQUEST_WEIGHT", "interval": "MINUTE", "intervalNum": 1, "limit": 6000, "count": 321 } ]
+}

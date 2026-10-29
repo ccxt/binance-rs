@@ -1,0 +1,23 @@
+{
+  "transactTime": 1741924229819,
+  "executionId": 75,
+  "amendedOrder": {
+    "symbol": "BTCUSDT",
+    "orderId": 60,
+    "orderListId": -1,
+    "origClientOrderId": "W2U8LCKNRVKPnoSZTNPfh7",
+    "clientOrderId": "jvDNRe8ia0Rt8v8rYlqdBT",
+    "price": "30000.00000000",
+    "qty": "5.00000000",
+    "executedQty": "0.00000000",
+    "preventedQty": "0.00000000",
+    "quoteOrderQty": "0.00000000",
+    "cumulativeQuoteQty": "0.00000000",
+    "status": "NEW",
+    "timeInForce": "GTC",
+    "type": "LIMIT",
+    "side": "BUY",
+    "workingTime": 1741924229819,
+    "selfTradePreventionMode": "NONE"
+  }
+}

@@ -352,4 +352,119 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn get_trades_and_historical_trades() {
+        let mut server = Server::new();
+        let m1 = server
+            .mock("GET", "/api/v3/trades")
+            .match_query(Matcher::Regex("limit=1&symbol=LTCBTC".into()))
+            .with_body_from_file("tests/mocks/market/trades.json")
+            .create();
+        let m2 = server
+            .mock("GET", "/api/v3/historicalTrades")
+            .match_header("x-mbx-apikey", "api-key")
+            .match_query(Matcher::Regex("fromId=28457&limit=1&symbol=LTCBTC".into()))
+            .with_body_from_file("tests/mocks/market/trades.json")
+            .create();
+
+        let config = Config::default().set_rest_api_endpoint(server.url());
+        let market: Market = Binance::new_with_config(Some("api-key".into()), None, &config);
+
+        let trades = market.get_trades("LTCBTC", 1).unwrap();
+        assert_eq!(trades[0].id, 28457);
+        assert!(approx_eq!(f64, trades[0].quote_qty, 48.000012, ulps = 2));
+        assert!(trades[0].is_buyer_maker);
+
+        let historical = market.get_historical_trades("LTCBTC", 28457, 1).unwrap();
+        assert_eq!(historical.len(), 1);
+
+        m1.assert();
+        m2.assert();
+    }
+
+    #[test]
+    fn get_ui_klines() {
+        let mut server = Server::new();
+        let mock = server
+            .mock("GET", "/api/v3/uiKlines")
+            .match_query(Matcher::AllOf(vec![
+                Matcher::UrlEncoded("symbol".into(), "LTCBTC".into()),
+                Matcher::UrlEncoded("interval".into(), "5m".into()),
+                Matcher::UrlEncoded("limit".into(), "10".into()),
+                Matcher::UrlEncoded("timeZone".into(), "-1:00".into()),
+            ]))
+            .with_body_from_file("tests/mocks/market/get_klines.json")
+            .create();
+
+        let config = Config::default().set_rest_api_endpoint(server.url());
+        let market: Market = Binance::new_with_config(None, None, &config);
+        let KlineSummaries::AllKlineSummaries(klines) = market
+            .get_ui_klines("LTCBTC", "5m", 10, None, None, Some("-1:00".to_string()))
+            .unwrap();
+        mock.assert();
+        assert!(!klines.is_empty());
+    }
+
+    #[test]
+    fn trading_day_and_rolling_window_tickers() {
+        let mut server = Server::new();
+        let m1 = server
+            .mock("GET", "/api/v3/ticker/tradingDay")
+            .match_query(Matcher::Regex("symbol=BTCUSDT&timeZone=8".into()))
+            .with_body_from_file("tests/mocks/market/trading_day_ticker.json")
+            .create();
+        let m2 = server
+            .mock("GET", "/api/v3/ticker")
+            .match_query(Matcher::AllOf(vec![
+                Matcher::UrlEncoded("symbols".into(), r#"["BTCUSDT","BNBBTC"]"#.into()),
+                Matcher::UrlEncoded("windowSize".into(), "4h".into()),
+                Matcher::UrlEncoded("type".into(), "MINI".into()),
+            ]))
+            .with_body_from_file("tests/mocks/market/rolling_window_tickers_mini.json")
+            .create();
+
+        let config = Config::default().set_rest_api_endpoint(server.url());
+        let market: Market = Binance::new_with_config(None, None, &config);
+
+        let day = market
+            .get_trading_day_ticker("BTCUSDT", Some("8".to_string()), false)
+            .unwrap();
+        assert_eq!(day.price_change.as_deref(), Some("-83.13000000"));
+        assert!(approx_eq!(f64, day.last_price, 26221.67, ulps = 2));
+        assert_eq!(day.count, 697727);
+
+        let tickers = market
+            .get_rolling_window_tickers(&["BTCUSDT", "BNBBTC"], Some("4h".to_string()), true)
+            .unwrap();
+        assert_eq!(tickers.len(), 2);
+        assert_eq!(tickers[1].symbol, "BNBBTC");
+        assert!(tickers[1].price_change.is_none());
+        assert!(approx_eq!(f64, tickers[1].volume, 166.67, ulps = 2));
+
+        m1.assert();
+        m2.assert();
+    }
+
+    #[test]
+    fn prices_for_symbols_encodes_json_array() {
+        let mut server = Server::new();
+        let mock = server
+            .mock("GET", "/api/v3/ticker/price")
+            .match_query(Matcher::UrlEncoded(
+                "symbols".into(),
+                r#"["LTCBTC","ETHBTC"]"#.into(),
+            ))
+            .with_body(r#"[{"symbol":"LTCBTC","price":"4.00000200"},{"symbol":"ETHBTC","price":"0.07946600"}]"#)
+            .create();
+
+        let config = Config::default().set_rest_api_endpoint(server.url());
+        let market: Market = Binance::new_with_config(None, None, &config);
+        let prices = market
+            .get_prices_for_symbols(&["LTCBTC", "ETHBTC"])
+            .unwrap();
+        mock.assert();
+        assert_eq!(prices.len(), 2);
+        assert_eq!(prices[1].symbol, "ETHBTC");
+    }
 }

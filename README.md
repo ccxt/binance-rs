@@ -248,75 +248,50 @@ let general: General = if use_testnet {
 
 ### USER STREAM CONFIGURATION
 
-```rust
-use binance::api::*;
-use binance::userstream::*;
+Binance retired the `listenKey` based spot user data stream (`POST /api/v3/userDataStream`)
+on 2026-02-20. Spot account events are now delivered through the WebSocket API
+(`wss://ws-api.binance.com:443/ws-api/v3`) after a signed `userDataStream.subscribe.signature`
+request, which `WebSockets::connect_user_data_stream` sends for you. HMAC API keys work; no
+`session.logon` is needed. Events arrive wrapped in `{"subscriptionId": n, "event": {...}}`
+and are unwrapped before reaching your handler.
 
-fn main() {
-    let api_key_user = Some("YOUR_API_KEY".into());
-    let user_stream: UserStream = Binance::new(api_key_user.clone(), None);
-
-    if let Ok(answer) = user_stream.start() {
-        println!("Data Stream Started ...");
-        let listen_key = answer.listen_key;
-
-        match user_stream.keep_alive(&listen_key) {
-            Ok(msg) => println!("Keepalive user data stream: {:?}", msg),
-            Err(e) => println!("Error: {:?}", e),
-        }
-
-        match user_stream.close(&listen_key) {
-            Ok(msg) => println!("Close user data stream: {:?}", msg),
-            Err(e) => println!("Error: {:?}", e),
-        }
-    } else {
-        println!("Not able to start an User Stream (Check your API_KEY)");
-    }
-}
-```
+USDⓈ-M futures still use a `listenKey` (`FuturesUserStream::start`), connected through the
+routed `/private` endpoint (`wss://fstream.binance.com/private/ws/<listenKey>`), which
+`FuturesWebSockets::connect` picks automatically.
 
 #### USER STREAM
 
 ```rust
-use binance::api::*;
-use binance::userstream::*;
+use binance::config::Config;
 use binance::websockets::*;
 use std::sync::atomic::{AtomicBool};
 
 fn main() {
-    let api_key_user = Some("YOUR_KEY".into());
     let keep_running = AtomicBool::new(true); // Used to control the event loop
-    let user_stream: UserStream = Binance::new(api_key_user, None);
+    let config = Config::default(); // Config::testnet() for the Spot testnet
 
-    if let Ok(answer) = user_stream.start() {
-	let listen_key = answer.listen_key;
+    let mut web_socket = WebSockets::new(|event: WebsocketEvent| {
+        match event {
+            WebsocketEvent::OutboundAccountPosition(position) => {
+                for balance in &position.balances {
+                    println!("Asset: {}, free: {}, locked: {}", balance.asset, balance.free, balance.locked);
+                }
+            },
+            WebsocketEvent::OrderTrade(trade) => {
+                println!("Symbol: {}, Side: {}, Price: {}, Execution Type: {}", trade.symbol, trade.side, trade.price, trade.execution_type);
+            },
+            WebsocketEvent::EventStreamTerminated(_) => {
+                println!("Subscription closed, reconnect");
+            },
+            _ => (),
+        };
+        Ok(())
+    });
 
-	let mut web_socket = WebSockets::new(|event: WebsocketEvent| {
-	    match event {
-		WebsocketEvent::AccountUpdate(account_update) => {
-		    for balance in &account_update.balance {
-			println!("Asset: {}, free: {}, locked: {}", balance.asset, balance.free, balance.locked);
-		    }
-		},
-		WebsocketEvent::OrderTrade(trade) => {
-		    println!("Symbol: {}, Side: {}, Price: {}, Execution Type: {}", trade.symbol, trade.side, trade.price, trade.execution_type);
-		},
-		_ => (),
-	    };
-	    Ok(())
-	});
-
-	web_socket.connect(&listen_key).unwrap(); // check error
-	    if let Err(e) = web_socket.event_loop(&keep_running) {
-		match e {
-		    err => {
-		        println!("Error: {:?}", err);
-		    }
-		}
-	     }
-	} else {
-	    println!("Not able to start an User Stream (Check your API_KEY)");
-	}
+    web_socket.connect_user_data_stream("YOUR_KEY", "YOUR_SECRET", &config).unwrap(); // check error
+    if let Err(e) = web_socket.event_loop(&keep_running) {
+        println!("Error: {:?}", e);
+    }
 }
 ```
 

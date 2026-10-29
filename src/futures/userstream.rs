@@ -10,6 +10,11 @@ pub struct FuturesUserStream {
     pub recv_window: u64,
 }
 
+/// `listenKey` management for the USDⓈ-M futures user data stream.
+///
+/// Connect the returned key with
+/// [`crate::futures::websockets::FuturesWebSockets::connect`], which uses the `/private`
+/// routed endpoint (`wss://fstream.binance.com/private/ws/<listenKey>`).
 impl FuturesUserStream {
     // User Stream
     pub fn start(&self) -> Result<UserDataStream> {

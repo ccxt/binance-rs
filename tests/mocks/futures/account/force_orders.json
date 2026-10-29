@@ -1,0 +1,26 @@
+[
+  {
+    "orderId": 6071832819,
+    "symbol": "BTCUSDT",
+    "pair": "BTCUSDT",
+    "status": "FILLED",
+    "clientOrderId": "autoclose-1596107620040000020",
+    "price": "10871.09",
+    "avgPrice": "10913.21000",
+    "origQty": "0.001",
+    "executedQty": "0.001",
+    "cumQuote": "10.91321",
+    "cumBase": "0",
+    "timeInForce": "IOC",
+    "type": "LIMIT",
+    "reduceOnly": false,
+    "closePosition": false,
+    "side": "SELL",
+    "positionSide": "BOTH",
+    "stopPrice": "0",
+    "workingType": "CONTRACT_PRICE",
+    "origType": "LIMIT",
+    "time": 1596107620044,
+    "updateTime": 1596107620087
+  }
+]

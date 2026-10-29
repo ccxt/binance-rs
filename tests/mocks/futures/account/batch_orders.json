@@ -1,0 +1,32 @@
+[
+  {
+    "clientOrderId": "testOrder",
+    "cumQty": "0",
+    "cumQuote": "0",
+    "executedQty": "0",
+    "orderId": 22542179,
+    "avgPrice": "0.00000",
+    "origQty": "10",
+    "price": "30000",
+    "reduceOnly": false,
+    "side": "BUY",
+    "positionSide": "BOTH",
+    "status": "NEW",
+    "stopPrice": "0",
+    "closePosition": false,
+    "symbol": "BTCUSDT",
+    "timeInForce": "GTC",
+    "type": "LIMIT",
+    "origType": "LIMIT",
+    "updateTime": 1566818724722,
+    "workingType": "CONTRACT_PRICE",
+    "priceProtect": false,
+    "priceMatch": "NONE",
+    "selfTradePreventionMode": "EXPIRE_MAKER",
+    "goodTillDate": 0
+  },
+  {
+    "code": -2022,
+    "msg": "ReduceOnly Order is rejected."
+  }
+]

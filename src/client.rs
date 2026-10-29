@@ -1,11 +1,9 @@
 use error_chain::bail;
-use hex::encode as hex_encode;
-use hmac::{Hmac, Mac};
 use crate::errors::{BinanceContentError, ErrorKind, Result};
+use crate::util::sign_hmac;
 use reqwest::StatusCode;
 use reqwest::blocking::Response;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue, USER_AGENT, CONTENT_TYPE};
-use sha2::Sha256;
 use serde::de::DeserializeOwned;
 use crate::api::API;
 
@@ -69,6 +67,20 @@ impl Client {
         self.handler(response)
     }
 
+    pub fn put_signed<T: DeserializeOwned>(&self, endpoint: API, request: String) -> Result<T> {
+        let url = self.sign_request(endpoint, Some(request));
+        let client = &self.inner_client;
+
+        let headers = self.build_headers(true)?;
+        if self.verbose {
+            println!("Request URL: {}", url);
+            println!("Request Headers: {:?}", headers);
+        }
+        let response = client.put(url.as_str()).headers(headers).send()?;
+
+        self.handler(response)
+    }
+
     pub fn delete_signed<T: DeserializeOwned>(
         &self, endpoint: API, request: Option<String>,
     ) -> Result<T> {
@@ -97,6 +109,31 @@ impl Client {
             println!("Request URL: {}", url);
         }
         let response = client.get(url.as_str()).send()?;
+
+        self.handler(response)
+    }
+
+    /// Unsigned GET that still sends the `X-MBX-APIKEY` header.
+    ///
+    /// Used for `MARKET_DATA` endpoints such as `historicalTrades`, which require an
+    /// API key but no signature.
+    pub fn get_with_api_key<T: DeserializeOwned>(
+        &self, endpoint: API, request: Option<String>,
+    ) -> Result<T> {
+        let mut url: String = format!("{}{}", self.host, String::from(endpoint));
+        if let Some(request) = request {
+            if !request.is_empty() {
+                url.push_str(format!("?{}", request).as_str());
+            }
+        }
+
+        let headers = self.build_headers(false)?;
+        if self.verbose {
+            println!("Request URL: {}", url);
+            println!("Request Headers: {:?}", headers);
+        }
+        let client = &self.inner_client;
+        let response = client.get(url.as_str()).headers(headers).send()?;
 
         self.handler(response)
     }
@@ -150,19 +187,14 @@ impl Client {
 
     // Request must be signed
     fn sign_request(&self, endpoint: API, request: Option<String>) -> String {
-        if let Some(request) = request {
-            let mut signed_key =
-                Hmac::<Sha256>::new_from_slice(self.secret_key.as_bytes()).unwrap();
-            signed_key.update(request.as_bytes());
-            let signature = hex_encode(signed_key.finalize().into_bytes());
-            let request_body: String = format!("{}&signature={}", request, signature);
-            format!("{}{}?{}", self.host, String::from(endpoint), request_body)
+        let request = request.unwrap_or_default();
+        let signature = sign_hmac(&self.secret_key, &request);
+        let request_body: String = if request.is_empty() {
+            format!("&signature={}", signature)
         } else {
-            let signed_key = Hmac::<Sha256>::new_from_slice(self.secret_key.as_bytes()).unwrap();
-            let signature = hex_encode(signed_key.finalize().into_bytes());
-            let request_body: String = format!("&signature={}", signature);
-            format!("{}{}?{}", self.host, String::from(endpoint), request_body)
-        }
+            format!("{}&signature={}", request, signature)
+        };
+        format!("{}{}?{}", self.host, String::from(endpoint), request_body)
     }
 
     fn build_headers(&self, content_type: bool) -> Result<HeaderMap> {
