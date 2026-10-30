@@ -2,11 +2,15 @@ use crate::errors::Result;
 use crate::config::Config;
 use crate::model::{
     AccountUpdateEvent, AggrTradesEvent, BalanceUpdateEvent, BookTickerEvent, DayTickerEvent,
-    WindowTickerEvent, DepthOrderBookEvent, KlineEvent, OrderBook, OrderTradeEvent, TradeEvent,
+    WindowTickerEvent, DepthOrderBookEvent, ExternalLockUpdateEvent, GenericEvent, KlineEvent,
+    ListStatusEvent, OrderBook, OrderTradeEvent, OutboundAccountPositionEvent,
+    SpotBalanceUpdateEvent, TradeEvent,
 };
+use crate::util::{get_timestamp_now, sign_hmac};
 use error_chain::bail;
 use url::Url;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::net::TcpStream;
@@ -39,7 +43,22 @@ impl WebsocketAPI {
 pub enum WebsocketEvent {
     AccountUpdate(AccountUpdateEvent),
     BalanceUpdate(BalanceUpdateEvent),
+    /// `executionReport`: order placed, canceled, filled, expired, amended
     OrderTrade(OrderTradeEvent),
+    /// `outboundAccountPosition`: balances changed
+    OutboundAccountPosition(OutboundAccountPositionEvent),
+    /// `balanceUpdate`: deposit, withdrawal or transfer
+    SpotBalanceUpdate(SpotBalanceUpdateEvent),
+    /// `listStatus`: order list (OCO/OTO/...) status change
+    ListStatus(ListStatusEvent),
+    /// `externalLockUpdate`: part of the balance locked/unlocked by an external system
+    ExternalLockUpdate(ExternalLockUpdateEvent),
+    /// `eventStreamTerminated`: the user data stream subscription was closed
+    EventStreamTerminated(GenericEvent),
+    /// `listenKeyExpired`: legacy listen key based stream expired
+    ListenKeyExpired(GenericEvent),
+    /// `serverShutdown`: the server will close this connection in about 10 minutes
+    ServerShutdown(GenericEvent),
     AggrTrades(AggrTradesEvent),
     Trade(TradeEvent),
     OrderBook(OrderBook),
@@ -52,11 +71,51 @@ pub enum WebsocketEvent {
     BookTicker(BookTickerEvent),
 }
 
+/// Build the `userDataStream.subscribe.signature` request of the Spot WebSocket API.
+///
+/// The signature payload is the alphabetically sorted `key=value&...` string of all
+/// params (`apiKey`, optional `recvWindow`, `timestamp`), signed with HMAC-SHA256.
+pub fn user_data_stream_subscribe_request(
+    api_key: &str, secret_key: &str, recv_window: u64, timestamp: u64, id: &str,
+) -> String {
+    let mut params: BTreeMap<String, String> = BTreeMap::new();
+    params.insert("apiKey".into(), api_key.to_string());
+    if recv_window > 0 {
+        params.insert("recvWindow".into(), recv_window.to_string());
+    }
+    params.insert("timestamp".into(), timestamp.to_string());
+    let payload = params
+        .iter()
+        .map(|(k, v)| format!("{}={}", k, v))
+        .collect::<Vec<_>>()
+        .join("&");
+    let signature = sign_hmac(secret_key, &payload);
+
+    let mut json_params = serde_json::Map::new();
+    json_params.insert(
+        "apiKey".into(),
+        serde_json::Value::String(api_key.to_string()),
+    );
+    if recv_window > 0 {
+        json_params.insert("recvWindow".into(), serde_json::Value::from(recv_window));
+    }
+    json_params.insert("timestamp".into(), serde_json::Value::from(timestamp));
+    json_params.insert("signature".into(), serde_json::Value::String(signature));
+
+    serde_json::json!({
+        "id": id,
+        "method": "userDataStream.subscribe.signature",
+        "params": json_params,
+    })
+    .to_string()
+}
+
 pub struct WebSockets<'a> {
     pub socket: Option<(WebSocket<MaybeTlsStream<TcpStream>>, Response)>,
     handler: Box<dyn FnMut(WebsocketEvent) -> Result<()> + 'a>,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 enum Events {
@@ -98,6 +157,35 @@ impl<'a> WebSockets<'a> {
         self.connect_wss(&WebsocketAPI::MultiStream.params(&endpoints.join("/")))
     }
 
+    /// Subscribe to the account's user data stream through the Spot WebSocket API
+    /// (`userDataStream.subscribe.signature`).
+    ///
+    /// This replaces the `listenKey` based `wss://stream.binance.com/ws/<listenKey>` flow,
+    /// which Binance retired on 2026-02-20. The connection goes to `config.ws_api_endpoint`
+    /// and works with HMAC API keys; no prior `session.logon` is required.
+    ///
+    /// Events arrive wrapped as `{"subscriptionId": n, "event": {...}}` and are unwrapped
+    /// by [`WebSockets::handle_msg`]. Run [`WebSockets::event_loop`] as usual afterwards.
+    pub fn connect_user_data_stream(
+        &mut self, api_key: &str, secret_key: &str, config: &Config,
+    ) -> Result<()> {
+        self.connect_wss(&config.ws_api_endpoint)?;
+        let timestamp = get_timestamp_now()?;
+        let id = uuid::Uuid::new_v4().to_string();
+        let request = user_data_stream_subscribe_request(
+            api_key,
+            secret_key,
+            config.recv_window,
+            timestamp,
+            &id,
+        );
+        if let Some(ref mut socket) = self.socket {
+            socket.0.write_message(Message::Text(request))?;
+            return Ok(());
+        }
+        bail!("Not connected");
+    }
+
     fn connect_wss(&mut self, wss: &str) -> Result<()> {
         let url = Url::parse(wss)?;
         match connect(url) {
@@ -124,9 +212,64 @@ impl<'a> WebSockets<'a> {
     pub fn handle_msg(&mut self, msg: &str) -> Result<()> {
         let value: serde_json::Value = serde_json::from_str(msg)?;
 
+        // Combined stream payload: {"stream": "...", "data": {...}}
         if let Some(data) = value.get("data") {
             self.handle_msg(&data.to_string())?;
             return Ok(());
+        }
+
+        // WebSocket API user data stream payload: {"subscriptionId": 0, "event": {...}}
+        if let Some(event) = value.get("event") {
+            self.handle_msg(&event.to_string())?;
+            return Ok(());
+        }
+
+        // WebSocket API response to one of our requests: {"id": ..., "status": 200, ...}
+        if let (Some(id), Some(status)) = (value.get("id"), value.get("status")) {
+            if status.as_u64() != Some(200) {
+                bail!(format!(
+                    "WebSocket API request {} failed: {}",
+                    id,
+                    value.get("error").cloned().unwrap_or_default()
+                ));
+            }
+            return Ok(());
+        }
+
+        // User data stream events are dispatched by name: several of them share the same
+        // shape, which an untagged enum cannot tell apart.
+        if let Some(event_type) = value.get("e").and_then(|e| e.as_str()) {
+            let action = match event_type {
+                "executionReport" => Some(WebsocketEvent::OrderTrade(serde_json::from_value(
+                    value.clone(),
+                )?)),
+                "outboundAccountPosition" => Some(WebsocketEvent::OutboundAccountPosition(
+                    serde_json::from_value(value.clone())?,
+                )),
+                "balanceUpdate" => Some(WebsocketEvent::SpotBalanceUpdate(serde_json::from_value(
+                    value.clone(),
+                )?)),
+                "listStatus" => Some(WebsocketEvent::ListStatus(serde_json::from_value(
+                    value.clone(),
+                )?)),
+                "externalLockUpdate" => Some(WebsocketEvent::ExternalLockUpdate(
+                    serde_json::from_value(value.clone())?,
+                )),
+                "eventStreamTerminated" => Some(WebsocketEvent::EventStreamTerminated(
+                    serde_json::from_value(value.clone())?,
+                )),
+                "listenKeyExpired" => Some(WebsocketEvent::ListenKeyExpired(
+                    serde_json::from_value(value.clone())?,
+                )),
+                "serverShutdown" => Some(WebsocketEvent::ServerShutdown(serde_json::from_value(
+                    value.clone(),
+                )?)),
+                _ => None,
+            };
+            if let Some(action) = action {
+                (self.handler)(action)?;
+                return Ok(());
+            }
         }
 
         if let Ok(events) = serde_json::from_value::<Events>(value) {

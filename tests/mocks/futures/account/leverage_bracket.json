@@ -1,0 +1,24 @@
+[
+  {
+    "symbol": "ETHUSDT",
+    "notionalCoef": 1.5,
+    "brackets": [
+      {
+        "bracket": 1,
+        "initialLeverage": 75,
+        "notionalCap": 10000,
+        "notionalFloor": 0,
+        "maintMarginRatio": 0.0065,
+        "cum": 0
+      },
+      {
+        "bracket": 2,
+        "initialLeverage": 50,
+        "notionalCap": 50000,
+        "notionalFloor": 10000,
+        "maintMarginRatio": 0.01,
+        "cum": 35.0
+      }
+    ]
+  }
+]

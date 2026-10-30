@@ -1,0 +1,4 @@
+[
+  { "symbol": "ETHUSDT", "adlQuantile": { "LONG": 3, "SHORT": 3, "HEDGE": 0 } },
+  { "symbol": "BTCUSDT", "adlQuantile": { "LONG": 1, "SHORT": 2, "BOTH": 0 } }
+]

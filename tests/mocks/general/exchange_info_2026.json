@@ -1,0 +1,47 @@
+{
+  "timezone": "UTC",
+  "serverTime": 1565246363776,
+  "rateLimits": [
+    { "rateLimitType": "REQUEST_WEIGHT", "interval": "MINUTE", "intervalNum": 1, "limit": 6000 }
+  ],
+  "exchangeFilters": [
+    { "filterType": "EXCHANGE_MAX_NUM_ORDERS", "maxNumOrders": 1000 },
+    { "filterType": "EXCHANGE_MAX_NUM_ORDER_LISTS", "maxNumOrderLists": 20 }
+  ],
+  "symbols": [
+    {
+      "symbol": "ETHBTC",
+      "status": "TRADING",
+      "baseAsset": "ETH",
+      "baseAssetPrecision": 8,
+      "quoteAsset": "BTC",
+      "quotePrecision": 8,
+      "quoteAssetPrecision": 8,
+      "baseCommissionPrecision": 8,
+      "quoteCommissionPrecision": 8,
+      "orderTypes": ["LIMIT", "LIMIT_MAKER", "MARKET", "STOP_LOSS", "STOP_LOSS_LIMIT", "TAKE_PROFIT", "TAKE_PROFIT_LIMIT"],
+      "icebergAllowed": true,
+      "ocoAllowed": true,
+      "otoAllowed": true,
+      "opoAllowed": true,
+      "quoteOrderQtyMarketAllowed": true,
+      "allowTrailingStop": false,
+      "cancelReplaceAllowed": false,
+      "amendAllowed": false,
+      "pegInstructionsAllowed": true,
+      "isSpotTradingAllowed": true,
+      "isMarginTradingAllowed": true,
+      "filters": [
+        { "filterType": "PRICE_FILTER", "minPrice": "0.00000100", "maxPrice": "100000.00000000", "tickSize": "0.00000100" },
+        { "filterType": "MAX_NUM_ORDER_LISTS", "maxNumOrderLists": 20 },
+        { "filterType": "MAX_NUM_ORDER_AMENDS", "maxNumOrderAmends": 10 },
+        { "filterType": "BRAND_NEW_FILTER", "whatever": 1 }
+      ],
+      "permissions": [],
+      "permissionSets": [["SPOT", "MARGIN"]],
+      "defaultSelfTradePreventionMode": "NONE",
+      "allowedSelfTradePreventionModes": ["NONE", "EXPIRE_TAKER", "EXPIRE_MAKER", "EXPIRE_BOTH", "DECREMENT", "TRANSFER"]
+    }
+  ],
+  "sors": [ { "baseAsset": "BTC", "symbols": ["BTCUSDT", "BTCUSDC"] } ]
+}

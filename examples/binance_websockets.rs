@@ -1,12 +1,10 @@
 #![allow(dead_code)]
 
-use binance::api::*;
-use binance::userstream::*;
+use binance::config::Config;
 use binance::websockets::*;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 fn main() {
-    //user_stream();
     //user_stream_websocket();
     //market_websocket();
     //kline_websocket();
@@ -15,71 +13,58 @@ fn main() {
     // multiple_streams();
 }
 
-fn user_stream() {
-    let api_key_user = Some("YOUR_API_KEY".into());
-    let user_stream: UserStream = Binance::new(api_key_user, None);
-
-    if let Ok(answer) = user_stream.start() {
-        println!("Data Stream Started ...");
-        let listen_key = answer.listen_key;
-
-        match user_stream.keep_alive(&listen_key) {
-            Ok(msg) => println!("Keepalive user data stream: {:?}", msg),
-            Err(e) => println!("Error: {}", e),
-        }
-
-        match user_stream.close(&listen_key) {
-            Ok(msg) => println!("Close user data stream: {:?}", msg),
-            Err(e) => println!("Error: {}", e),
-        }
-    } else {
-        println!("Not able to start an User Stream (Check your API_KEY)");
-    }
-}
+// The listenKey based user stream (`POST /api/v3/userDataStream`) was retired by Binance on
+// 2026-02-20. Spot user data is now subscribed through the WebSocket API with an API key
+// signature, see `user_stream_websocket` below.
 
 fn user_stream_websocket() {
     let keep_running = AtomicBool::new(true); // Used to control the event loop
-    let api_key_user = Some("YOUR_KEY".into());
-    let user_stream: UserStream = Binance::new(api_key_user, None);
+    let api_key = "YOUR_KEY";
+    let secret_key = "YOUR_SECRET";
+    let config = Config::default();
 
-    if let Ok(answer) = user_stream.start() {
-        let listen_key = answer.listen_key;
-
-        let mut web_socket: WebSockets<'_> = WebSockets::new(|event: WebsocketEvent| {
-            match event {
-                WebsocketEvent::AccountUpdate(account_update) => {
-                    for balance in &account_update.data.balances {
-                        println!(
-                            "Asset: {}, wallet_balance: {}, cross_wallet_balance: {}, balance: {}",
-                            balance.asset,
-                            balance.wallet_balance,
-                            balance.cross_wallet_balance,
-                            balance.balance_change
-                        );
-                    }
-                }
-                WebsocketEvent::OrderTrade(trade) => {
+    let mut web_socket: WebSockets<'_> = WebSockets::new(|event: WebsocketEvent| {
+        match event {
+            WebsocketEvent::OutboundAccountPosition(position) => {
+                for balance in &position.balances {
                     println!(
-                        "Symbol: {}, Side: {}, Price: {}, Execution Type: {}",
-                        trade.symbol, trade.side, trade.price, trade.execution_type
+                        "Asset: {}, free: {}, locked: {}",
+                        balance.asset, balance.free, balance.locked
                     );
                 }
-                _ => (),
-            };
+            }
+            WebsocketEvent::SpotBalanceUpdate(update) => {
+                println!("Asset: {}, delta: {}", update.asset, update.delta);
+            }
+            WebsocketEvent::OrderTrade(trade) => {
+                println!(
+                    "Symbol: {}, Side: {}, Price: {}, Execution Type: {}",
+                    trade.symbol, trade.side, trade.price, trade.execution_type
+                );
+            }
+            WebsocketEvent::ListStatus(list) => {
+                println!(
+                    "Order list {}: {}",
+                    list.order_list_id, list.list_order_status
+                );
+            }
+            WebsocketEvent::EventStreamTerminated(_) => {
+                println!("User data stream terminated, reconnect");
+            }
+            _ => (),
+        };
 
-            Ok(())
-        });
+        Ok(())
+    });
 
-        web_socket.connect(&listen_key).unwrap(); // check error
-        if let Err(e) = web_socket.event_loop(&keep_running) {
-            println!("Error: {}", e);
-        }
-        user_stream.close(&listen_key).unwrap();
-        web_socket.disconnect().unwrap();
-        println!("Userstrem closed and disconnected");
-    } else {
-        println!("Not able to start an User Stream (Check your API_KEY)");
+    web_socket
+        .connect_user_data_stream(api_key, secret_key, &config)
+        .unwrap(); // check error
+    if let Err(e) = web_socket.event_loop(&keep_running) {
+        println!("Error: {}", e);
     }
+    web_socket.disconnect().unwrap();
+    println!("Userstrem closed and disconnected");
 }
 
 fn market_websocket() {

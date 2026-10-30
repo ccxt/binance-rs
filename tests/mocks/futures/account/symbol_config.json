@@ -1,0 +1,9 @@
+[
+  {
+    "symbol": "BTCUSDT",
+    "marginType": "CROSSED",
+    "isAutoAddMargin": false,
+    "leverage": 21,
+    "maxNotionalValue": "1000000"
+  }
+]

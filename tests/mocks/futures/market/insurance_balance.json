@@ -1,0 +1,3 @@
+[
+  { "symbols": ["BNBUSDT", "BTCUSDT"], "assets": [ { "asset": "USDC", "marginBalance": "299999998.6497832", "updateTime": 1745366402000 }, { "asset": "USDT", "marginBalance": "793930579.315848", "updateTime": 1745366402000 } ] }
+]

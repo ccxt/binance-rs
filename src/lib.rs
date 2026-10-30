@@ -6,7 +6,8 @@
     unused_import_braces,
     clippy::all
 )]
-#![allow(clippy::needless_doctest_main)]
+// `error_chain`'s `Error` is 152 bytes; boxing it would change the public `Result` type.
+#![allow(clippy::needless_doctest_main, clippy::result_large_err)]
 #![warn(
     clippy::wildcard_imports,
     clippy::manual_string_new,
