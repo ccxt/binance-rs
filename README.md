@@ -1,6 +1,11 @@
 # binance-rs
 
-Unofficial Rust Library for the [Binance API](https://github.com/binance/binance-spot-api-docs) and [Binance Futures API (Under development with upcoming breaking changes)](https://binance-docs.github.io/apidocs/futures/en/#general-info)
+Unofficial Rust Library for the [Binance Spot API](https://developers.binance.com/docs/binance-spot-api-docs) and the [Binance USDⓈ-M Futures API](https://developers.binance.com/docs/derivatives/usds-margined-futures/general-info).
+
+Endpoints and models track the official changelogs as of October 2026, including:
+
+- Spot: order lists (OCO/OTO/OTOCO), cancel-replace, amend-keep-priority, commission rates, `myFilters`, order rate limits, trading-day and rolling-window tickers, `uiKlines`, and the WebSocket API user data stream that replaced the retired `listenKey` endpoints.
+- Futures: conditional orders through the Algo service (`/fapi/v1/algoOrder`), batch place/cancel, modify order, V3 account/balance/position endpoints, symbol and account config, leverage brackets, commission rate, funding rate history, long/short ratios, basis, insurance fund, routed `/public`, `/market` and `/private` websocket streams, and the `ALGO_UPDATE` / `TRADE_LITE` events.
 
 [![Crates.io](https://img.shields.io/crates/v/binance.svg)](https://crates.io/crates/binance)
 [![Build Status](https://travis-ci.org/wisespace-io/binance-rs.png?branch=master)](https://travis-ci.org/wisespace-io/binance-rs)
@@ -23,7 +28,7 @@ Add this to your Cargo.toml
 binance = { git = "https://github.com/ccxt/binance-rs.git" }
 ```
 
-## Rust >= 1.56.1
+## Rust >= 1.89.0
 
 ```rust
 rustup install stable
