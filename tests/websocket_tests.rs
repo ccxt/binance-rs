@@ -18,6 +18,7 @@ fn spot_events(messages: &[&str]) -> Vec<WebsocketEvent> {
         ws.test_handle_msg(msg).unwrap();
     }
     let out = events.borrow().clone();
+    drop(ws);
     out
 }
 
@@ -32,6 +33,7 @@ fn futures_events(messages: &[&str]) -> Vec<FuturesWebsocketEvent> {
         ws.test_handle_msg(msg).unwrap();
     }
     let out = events.borrow().clone();
+    drop(ws);
     out
 }
 

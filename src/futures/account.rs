@@ -97,11 +97,11 @@ impl OrderType {
     pub fn is_conditional(&self) -> bool {
         matches!(
             self,
-            Self::Stop
-                | Self::StopMarket
-                | Self::TakeProfit
-                | Self::TakeProfitMarket
-                | Self::TrailingStopMarket
+            Self::Stop |
+                Self::StopMarket |
+                Self::TakeProfit |
+                Self::TakeProfitMarket |
+                Self::TrailingStopMarket
         )
     }
 }

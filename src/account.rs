@@ -1466,7 +1466,7 @@ impl Account {
         S: Into<String>,
     {
         if !is_start_time_valid(&start_time) {
-            return bail!("Start time should be less than the current time");
+            bail!("Start time should be less than the current time");
         }
 
         let mut parameters: BTreeMap<String, String> = BTreeMap::new();
@@ -1485,10 +1485,10 @@ impl Account {
         S: Into<String>,
     {
         if end_time <= start_time {
-            return bail!("End time should be greater than start time");
+            bail!("End time should be greater than start time");
         }
         if !is_start_time_valid(&start_time) {
-            return bail!("Start time should be less than the current time");
+            bail!("Start time should be less than the current time");
         }
         self.get_trades(symbol, start_time, end_time)
     }
@@ -1497,10 +1497,7 @@ impl Account {
     where
         S: Into<String>,
     {
-        let mut trades = match self.trade_history_from(symbol, start_time) {
-            Ok(trades) => trades,
-            Err(e) => return Err(e),
-        };
+        let mut trades = self.trade_history_from(symbol, start_time)?;
         trades.retain(|trade| trade.time <= end_time);
         Ok(trades)
     }
@@ -1533,7 +1530,7 @@ impl Account {
 
         if let Some(params) = request_params {
             for (key, value) in params {
-                order_parameters.insert(key, value.to_string());
+                order_parameters.insert(key, value);
             }
         }
 
