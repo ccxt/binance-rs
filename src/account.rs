@@ -1465,6 +1465,7 @@ impl Account {
     where
         S: Into<String>,
     {
+        #[allow(unreachable_code)]
         if !is_start_time_valid(&start_time) {
             bail!("Start time should be less than the current time");
         }
@@ -1484,9 +1485,11 @@ impl Account {
     where
         S: Into<String>,
     {
+        #[allow(unreachable_code)]
         if end_time <= start_time {
             bail!("End time should be greater than start time");
         }
+        #[allow(unreachable_code)]
         if !is_start_time_valid(&start_time) {
             bail!("Start time should be less than the current time");
         }
