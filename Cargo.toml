@@ -31,8 +31,11 @@ tungstenite = { version = "0.21.0", features = ["native-tls"] }
 url = "2.5.0"
 clap = "4.5.2"
 uuid = { version = "1.18.0", features = ["v4"] }
+crypto-orderbook = { version = "0.5.2", default-features = false, optional = true }
+rust_decimal = { version = "1", optional = true }
 
 [features]
+orderbook = ["dep:crypto-orderbook", "dep:rust_decimal"]
 vendored-tls = [
   "reqwest/native-tls-vendored",
   "tungstenite/native-tls-vendored",

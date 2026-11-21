@@ -32,3 +32,6 @@ pub mod userstream;
 pub mod websockets;
 
 pub mod futures;
+
+#[cfg(feature = "orderbook")]
+pub mod orderbook;
